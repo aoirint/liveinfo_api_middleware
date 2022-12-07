@@ -64,6 +64,7 @@ def dump_nicolive_community_live(
   og_url_tag = bs.find('meta', attrs={'property': 'og:url'})
   program_url = og_url_tag.get('content') if og_url_tag is not None else None
 
+  dump_path.parent.mkdir(parents=True, exist_ok=True)
   dump_path.write_text(
     json.dumps(
       {
