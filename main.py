@@ -32,6 +32,9 @@ app.add_middleware(
 nicolive_last_fetched: Optional[datetime] = None
 nicolive_interval = timedelta(seconds=60)
 
+ytlive_last_fetched: Optional[datetime] = None
+ytlive_interval = timedelta(seconds=60)
+
 
 @app.get('/v1/nicolive')
 def v1_nicolive():
@@ -52,3 +55,25 @@ def v1_nicolive():
       nicolive_last_fetched = now
 
   return FileResponse(NICOLIVE_DUMP_PATH)
+
+
+@app.get('/v1/ytlive')
+def v1_ytlive():
+  global ytlive_last_fetched
+
+  now = datetime.now(tz=timezone.utc)
+  if ytlive_last_fetched is None or ytlive_interval <= now - ytlive_last_fetched:
+    ytlive_last_fetched_string = ytlive_last_fetched.isoformat() if ytlive_last_fetched is not None else 'None'
+    print(f'[{now.isoformat()}] Fetch ytlive (last_fetched_at: {ytlive_last_fetched_string})')
+
+    try:
+      liveinfo_api.dump_ytlive_channel_live(
+        ytlive_channel_id=YTLIVE_CHANNEL_ID,
+        ytlive_api_key=YTLIVE_API_KEY,
+        useragent=USERAGENT,
+        dump_path=YTLIVE_DUMP_PATH,
+      )
+    finally:
+      ytlive_last_fetched = now
+
+  return FileResponse(YTLIVE_DUMP_PATH)
