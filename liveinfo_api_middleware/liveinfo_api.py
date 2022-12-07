@@ -15,10 +15,25 @@ def dump_nicolive_community_live(
   useragent: str,
   dump_path: Path,
 ):
+  onair_response = requests.get(
+    f'https://com.nicovideo.jp/api/v1/communities/{nicolive_community_id}/lives/onair.json',
+    headers={
+      'User-Agent': useragent,
+    },
+  )
+  # onair_response.raise_for_status()
+  is_onair = False
+  if onair_response.status_code == 200:
+    onair_data = json.loads(onair_response.text)
+    onair_live = onair_data.get('data', {}).get('live', {})
+
+    is_onair = onair_live.get('status') == 'ON_AIR'
+
+
   ogp_useragent = f'facebookexternalhit/1.1;Googlebot/2.1;{useragent}'
 
   watch_response = requests.get(
-    f'https://live.nicovideo.jp/watch/{nicolive_community_id}',
+    f'https://live.nicovideo.jp/watch/co{nicolive_community_id}',
     headers={
       'User-Agent': ogp_useragent,
     },
@@ -59,6 +74,7 @@ def dump_nicolive_community_live(
           'thumbnails': json_ld_data.get('thumbnailUrl'),
           'startTime': start_time_string,
           'endTime': end_time_string,
+          'isOnair': is_onair,
         },
         'community': {
           'name': community_name,
