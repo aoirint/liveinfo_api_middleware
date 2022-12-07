@@ -44,47 +44,10 @@ def dump_nicolive_community_live(
   community_icon_url = community_icon_tag.get('src') if community_icon_tag is not None else None
 
   start_time_string = publication.get('startDate')
-  start_time = datetime.fromisoformat(start_time_string) if start_time_string is not None else None
   end_time_string = publication.get('endDate')
-  end_time = datetime.fromisoformat(end_time_string) if end_time_string is not None else None
-
-  now = datetime.now(tz=JST)
 
   og_url_tag = bs.find('meta', attrs={'property': 'og:url'})
   program_url = og_url_tag.get('content') if og_url_tag is not None else None
-
-  embedded_data_tag = bs.select_one('#embedded-data')
-  embedded_data_props = embedded_data_tag.get('props', {}) if embedded_data_tag is not None else {}
-  print(embedded_data_props) # FIXME: == {}, for bot HTTP request
-
-  # タイムシフトの状態を確認する
-  # programTimeshift.publiction.status = Before, Open, End, {None}
-  # if timeshift is unpublished, noTimeshiftProgram is in userProgramWatch.rejectedReasons
-  program_timeshift_status = embedded_data_props.get('programTimeshift', {}).get('publication', {}).get('status')
-
-  user_program_watch_rejected_reasons = embedded_data_props.get('userProgramWatch', {}).get('rejectedReasons', [])
-
-  # status = scheduled, live, timeshiftAvailable, timeshiftExpired, timeshiftUnpublished
-  status: Literal['scheduled', 'live', 'timeshiftAvailable', 'timeshiftExpired', 'timeshiftUnpublished']
-  if 'noTimeshiftProgram' in user_program_watch_rejected_reasons:
-    # タイムシフト非公開番組
-    status = 'timeshiftUnpublished'
-
-  elif 'programNotBegun' in user_program_watch_rejected_reasons:
-    # 予約番組
-    status = 'scheduled'
-  
-  elif program_timeshift_status == 'Open':
-    # タイムシフト公開中の番組
-    status = 'timeshiftAvailable'
-
-  elif program_timeshift_status == 'End':
-    # タイムシフト公開が終了した番組
-    status = 'timeshiftExpired'
-
-  else:
-    # 放送中の番組
-    status = 'live'
 
   dump_path.write_text(
     json.dumps(
@@ -96,7 +59,6 @@ def dump_nicolive_community_live(
           'thumbnails': json_ld_data.get('thumbnailUrl'),
           'startTime': start_time_string,
           'endTime': end_time_string,
-          'status': status,
         },
         'community': {
           'name': community_name,
