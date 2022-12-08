@@ -199,7 +199,7 @@ def dump_ytlive_channel_live(
   start_time_string = live_streming_details_obj.get('actualStartTime')
   end_time_string = live_streming_details_obj.get('actualEndTime')
 
-  channel_url = f'https://www.youtube.com/{channel_id}' if channel_id is not None else None
+  channel_url = f'https://www.youtube.com/channel/{channel_id}' if channel_id is not None else None
   if channel_custom_url is not None:
     channel_url = f'https://www.youtube.com/{channel_custom_url}' # ハンドル名
 
