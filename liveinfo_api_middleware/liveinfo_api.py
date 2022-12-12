@@ -154,7 +154,7 @@ def dump_ytlive_channel_live(
   )
   videos_data = videos_response.json()
 
-  active_video_item = {}
+  live_items = []
   for video_item in videos_data['items']:
     video_id = video_item['id']
 
@@ -172,13 +172,30 @@ def dump_ytlive_channel_live(
 
     if live_broadcast_content == 'live':
       # ライブ配信中の番組がある場合、選択する
-      active_video_item = video_item
-      break
+      live_items.append(video_item)
 
     if live_broadcast_content == 'none' and live_streming_details_obj is not None:
       # 終了済みのライブ番組またはプレミア公開番組がある場合、選択する
+      live_items.append(video_item)
+
+
+  # 最新とその1つ前のライブ番組の順番が交換されるYouTubeの謎仕様の対策（再エンコード処理のせい？）
+  # 実際の放送時間に基づいてソートし直す
+  active_video_item = {}
+  max_start_time = None
+  for video_item in live_items:
+    start_time_string = video_item.get('liveStreamingDetails', {}).get('actualStartTime')
+
+    # Python 3.10のdatetime.fromisoformatが末尾ZでUTC時刻を表すISO8601の仕様に非対応な問題の対策
+    # start_time_stringが拡張形式なことを想定して、末尾Zを+00:00で置換
+    if start_time_string is not None and start_time_string.endswith('Z'):
+      start_time_string = start_time_string[:-1] + '+00:00'
+
+    start_time = datetime.fromisoformat(start_time_string) if start_time_string is not None else datetime.min
+
+    if max_start_time is None or max_start_time < start_time:
       active_video_item = video_item
-      break
+      max_start_time = start_time
 
   # Extract data from active_video_item
   active_search_item = next(filter(lambda search_item: search_item['id']['videoId'] == video_id, search_list_items), {})
