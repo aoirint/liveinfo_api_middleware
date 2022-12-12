@@ -186,7 +186,7 @@ def dump_ytlive_channel_live(
   for video_item in live_items:
     start_time_string = video_item.get('liveStreamingDetails', {}).get('actualStartTime')
 
-    # Python 3.10のdatetime.fromisoformatが末尾ZでUTC時刻を表すISO8601の仕様に非対応な問題の対策
+    # Python 3.10のdatetime.fromisoformatが末尾ZでUTC時刻を表すISO8601の仕様に非対応な仕様の対策
     # start_time_stringが拡張形式なことを想定して、末尾Zを+00:00で置換
     if start_time_string is not None and start_time_string.endswith('Z'):
       start_time_string = start_time_string[:-1] + '+00:00'
