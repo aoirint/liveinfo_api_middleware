@@ -188,6 +188,7 @@ def dump_ytlive_channel_live(
 
     # Python 3.10のdatetime.fromisoformatが末尾ZでUTC時刻を表すISO8601の仕様に非対応な仕様の対策
     # start_time_stringが拡張形式なことを想定して、末尾Zを+00:00で置換
+    # TODO: Python 3.11で対応したので、Pythonを更新する
     if start_time_string is not None and start_time_string.endswith('Z'):
       start_time_string = start_time_string[:-1] + '+00:00'
 
