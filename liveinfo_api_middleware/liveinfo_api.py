@@ -199,9 +199,9 @@ def dump_ytlive_channel_live(
       max_start_time = start_time
 
   # Extract data from active_video_item
-  active_search_item = next(filter(lambda search_item: search_item['id']['videoId'] == video_id, search_list_items), {})
+  active_video_id = active_video_item.get('id')
+  active_search_item = next(filter(lambda search_item: search_item['id']['videoId'] == active_video_id, search_list_items), {})
 
-  video_id = active_video_item.get('id')
   snippet_obj = active_video_item.get('snippet')
   live_streming_details_obj = active_video_item.get('liveStreamingDetails', {})
   live_broadcast_content = active_search_item.get('snippet', {}).get('liveBroadcastContent')
@@ -226,10 +226,10 @@ def dump_ytlive_channel_live(
     json.dumps(
       {
         'program': {
-          'id': video_id,
+          'id': active_video_id,
           'title': title,
           'description': description,
-          'url': f'https://www.youtube.com/watch?v={video_id}' if video_id is not None else None,
+          'url': f'https://www.youtube.com/watch?v={active_video_id}' if active_video_id is not None else None,
           'thumbnails': thumbnails,
           'startTime': start_time_string,
           'endTime': end_time_string,
