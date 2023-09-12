@@ -10,8 +10,9 @@ on:
   workflow_dispatch:
 
 env:
+  VERSION: ${{ (github.event.release.tag_name != '' && github.event.release.tag_name) || '0.0.0' }}
   IMAGE_NAME: aoirint/liveinfo_api_middleware
-  IMAGE_TAG: ${{ github.event.release.tag_name != '' && github.event.release.tag_name || 'latest' }}
+  IMAGE_TAG: ${{ (github.event.release.tag_name != '' && github.event.release.tag_name) || 'latest' }}
 
 jobs:
   docker-build-and-push:
@@ -28,6 +29,12 @@ jobs:
         with:
           username: ${{ vars.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Replace Version
+        shell: bash
+        run: |
+          sed -i "s/__VERSION__ = \"0.0.0\"/__VERSION__ = \"${{ env.VERSION }}\"/" liveinfo_api_middleware/__init__.py
+          sed -i "s/version = \"0.0.0\"/version = \"${{ env.VERSION }}\"/" pyproject.toml
 
       - name: Build and Deploy Docker image
         uses: docker/build-push-action@v3
