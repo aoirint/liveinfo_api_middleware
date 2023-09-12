@@ -5,8 +5,34 @@ from typing import Literal
 from zoneinfo import ZoneInfo
 
 import requests
+from pydantic import BaseModel
 
 JST = ZoneInfo("Asia/Tokyo")
+
+
+class YtliveDataChannelItemSnippetThumbnail(BaseModel):
+    url: str
+    width: int
+    height: int
+
+
+class YtliveDataChannelItemSnippetThumbnails(BaseModel):
+    default: YtliveDataChannelItemSnippetThumbnail | None = None
+    medium: YtliveDataChannelItemSnippetThumbnail | None = None
+    high: YtliveDataChannelItemSnippetThumbnail | None = None
+
+
+class YtliveDataChannelItemSnippet(BaseModel):
+    customUrl: str | None = None
+    thumbnails: YtliveDataChannelItemSnippetThumbnails | None = None
+
+
+class YtliveDataChannelItem(BaseModel):
+    snippet: YtliveDataChannelItemSnippet | None = None
+
+
+class YtliveDataChannel(BaseModel):
+    items: list[YtliveDataChannelItem] | None = None
 
 
 def dump_ytlive_channel_live(
@@ -16,7 +42,7 @@ def dump_ytlive_channel_live(
     dump_path: Path,
 ) -> None:
     # チャンネル情報を取得（アイコン）
-    channels_response = requests.get(
+    channel_api_response = requests.get(
         "https://www.googleapis.com/youtube/v3/channels",
         params={
             "key": ytlive_api_key,
@@ -27,13 +53,18 @@ def dump_ytlive_channel_live(
             "User-Agent": useragent,
         },
     )
-    channels_data = channels_response.json()
-    channel_list_items = channels_data["items"]
-    channel = channel_list_items[0]
+    channel_api_dict = channel_api_response.json()
+    channel_api_data = YtliveDataChannel.model_validate(channel_api_dict)
 
-    channel_snippet_obj = channel.get("snippet")
-    channel_custom_url = channel_snippet_obj.get("customUrl")
-    channel_thumbnails = channel_snippet_obj.get("thumbnails")
+    channel_list_items = channel_api_data.items
+    channel = channel_list_items[0] if channel_list_items is not None else None
+
+    channel_custom_url: str | None = None
+    channel_thumbnails: YtliveDataChannelItemSnippetThumbnails | None = None
+    if channel is not None:
+        if channel.snippet is not None:
+            channel_custom_url = channel.snippet.customUrl
+            channel_thumbnails = channel.snippet.thumbnails
 
     # チャンネルの動画リストを取得
     search_response = requests.get(
@@ -173,7 +204,11 @@ def dump_ytlive_channel_live(
                     "id": channel_id,
                     "name": channel_name,
                     "url": channel_url,
-                    "thumbnails": channel_thumbnails,
+                    "thumbnails": (
+                        channel_thumbnails.model_dump()
+                        if channel_thumbnails is not None
+                        else None
+                    ),
                 },
             },
             ensure_ascii=False,
