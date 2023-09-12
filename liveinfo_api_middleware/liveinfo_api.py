@@ -6,8 +6,21 @@ from zoneinfo import ZoneInfo
 
 import requests
 from bs4 import BeautifulSoup
+from pydantic import BaseModel
 
 JST = ZoneInfo("Asia/Tokyo")
+
+
+class NicoliveCommunityLiveOnairLive(BaseModel):
+    status: str
+
+
+class NicoliveCommunityLiveOnairData(BaseModel):
+    live: NicoliveCommunityLiveOnairLive | None = None
+
+
+class NicoliveCommunityLiveOnair(BaseModel):
+    data: NicoliveCommunityLiveOnairData | None = None
 
 
 def dump_nicolive_community_live(
@@ -24,10 +37,10 @@ def dump_nicolive_community_live(
     # onair_response.raise_for_status()
     is_onair = False
     if onair_response.status_code == 200:
-        onair_data = json.loads(onair_response.text)
-        onair_live = onair_data.get("data", {}).get("live", {})
-
-        is_onair = onair_live.get("status") == "ON_AIR"
+        onair_live = NicoliveCommunityLiveOnair.model_validate(onair_response.json())
+        if onair_live.data is not None:
+            if onair_live.data.live is not None:
+                is_onair = onair_live.data.live.status == "ON_AIR"
 
     ogp_useragent = f"facebookexternalhit/1.1;Googlebot/2.1;{useragent}"
 
