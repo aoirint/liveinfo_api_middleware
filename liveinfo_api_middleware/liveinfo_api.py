@@ -41,6 +41,30 @@ class NicoliveWatchJsonLd(BaseModel):
     author: NicoliveWatchJsonLdAuthor | None = None
 
 
+class NicoliveWatchEmbeddedDataSupplierIcons(BaseModel):
+    uri150x150: str | None = None
+
+
+class NicoliveWatchEmbeddedDataSupplier(BaseModel):
+    icons: NicoliveWatchEmbeddedDataSupplierIcons | None = None
+
+
+class NicoliveWatchEmbeddedDataProgram(BaseModel):
+    supplier: NicoliveWatchEmbeddedDataSupplier | None = None
+
+
+class NicoliveWatchEmbeddedDataSocialGroup(BaseModel):
+    id: str | None = None
+    name: str | None = None
+    thumbnailImageUrl: str | None = None
+    socialGroupPageUrl: str | None = None
+
+
+class NicoliveWatchEmbeddedData(BaseModel):
+    program: NicoliveWatchEmbeddedDataProgram | None = None
+    socialGroup: NicoliveWatchEmbeddedDataSocialGroup | None = None
+
+
 def dump_nicolive_community_live(
     nicolive_community_id: str,
     useragent: str,
@@ -77,34 +101,24 @@ def dump_nicolive_community_live(
     json_ld_data = json.loads(json_ld_string)
     json_ld = NicoliveWatchJsonLd.model_validate(json_ld_data)
 
-    user_icon_tag = bs.select_one(
-        "#watchPage > div.___program-information-area___2mmJb > "
-        "div.___program-information-header-area___3F--P > div > "
-        "div.___user-summary___1PSFe.___user-summary___1gieM.user-summary > "
-        "div.___thumbnail-area___1z7XZ.thumbnail-area > a > img"
-    )
-    user_icon_url = user_icon_tag.get("src") if user_icon_tag is not None else None
+    embedded_data_tag = bs.find(id="embedded-data")
+    embedded_data_string = embedded_data_tag.attrs.get("data-props")
+    embedded_data_dict = json.loads(embedded_data_string)
+    embedded_data = NicoliveWatchEmbeddedData.model_validate(embedded_data_dict)
 
-    community_name_tag = bs.select_one(
-        "#watchPage > div.___program-information-area___2mmJb > "
-        "div.___program-information-body-area___1D8P9 > "
-        "div.___program-information-side-area___1XQ24 > "
-        "div > div > div > div > a"
-    )
-    community_name = community_name_tag.text if community_name_tag is not None else None
-    community_url = (
-        community_name_tag.get("href") if community_name_tag is not None else None
-    )
+    user_icon_url: str | None = None
+    if embedded_data.program is not None:
+        if embedded_data.program.supplier is not None:
+            if embedded_data.program.supplier.icons is not None:
+                user_icon_url = embedded_data.program.supplier.icons.uri150x150
 
-    community_icon_tag = bs.select_one(
-        "#watchPage > div.___program-information-area___2mmJb > "
-        "div.___program-information-body-area___1D8P9 > "
-        "div.___program-information-side-area___1XQ24 > "
-        "div > div > div > a > img"
-    )
-    community_icon_url = (
-        community_icon_tag.get("src") if community_icon_tag is not None else None
-    )
+    community_name: str | None = None
+    community_url: str | None = None
+    community_icon_url: str | None = None
+    if embedded_data.socialGroup is not None:
+        community_name = embedded_data.socialGroup.name
+        community_url = embedded_data.socialGroup.socialGroupPageUrl
+        community_icon_url = embedded_data.socialGroup.thumbnailImageUrl
 
     start_time_string: str | None = None
     end_time_string: str | None = None
