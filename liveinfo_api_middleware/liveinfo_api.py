@@ -23,6 +23,24 @@ class NicoliveCommunityLiveOnair(BaseModel):
     data: NicoliveCommunityLiveOnairData | None = None
 
 
+class NicoliveWatchJsonLdPublication(BaseModel):
+    startDate: str | None = None
+    endDate: str | None = None
+
+
+class NicoliveWatchJsonLdAuthor(BaseModel):
+    name: str | None = None
+    url: str | None = None
+
+
+class NicoliveWatchJsonLd(BaseModel):
+    name: str | None = None
+    description: str | None = None
+    thumbnailUrl: str | None = None
+    publication: NicoliveWatchJsonLdPublication | None = None
+    author: NicoliveWatchJsonLdAuthor | None = None
+
+
 def dump_nicolive_community_live(
     nicolive_community_id: str,
     useragent: str,
@@ -57,8 +75,7 @@ def dump_nicolive_community_live(
     json_ld_string = json_ld_tag.string
 
     json_ld_data = json.loads(json_ld_string)
-    publication = json_ld_data.get("publication", {})
-    author = json_ld_data.get("author", {})
+    json_ld = NicoliveWatchJsonLd.model_validate(json_ld_data)
 
     user_icon_tag = bs.select_one(
         "#watchPage > div.___program-information-area___2mmJb > "
@@ -89,8 +106,17 @@ def dump_nicolive_community_live(
         community_icon_tag.get("src") if community_icon_tag is not None else None
     )
 
-    start_time_string = publication.get("startDate")
-    end_time_string = publication.get("endDate")
+    start_time_string: str | None = None
+    end_time_string: str | None = None
+    if json_ld.publication is not None:
+        start_time_string = json_ld.publication.startDate
+        end_time_string = json_ld.publication.endDate
+
+    author_name: str | None = None
+    author_url: str | None = None
+    if json_ld.author is not None:
+        author_name = json_ld.author.name
+        author_url = json_ld.author.url
 
     og_url_tag = bs.find("meta", attrs={"property": "og:url"})
     program_url = og_url_tag.get("content") if og_url_tag is not None else None
@@ -100,10 +126,10 @@ def dump_nicolive_community_live(
         json.dumps(
             {
                 "program": {
-                    "title": json_ld_data.get("name"),
-                    "description": json_ld_data.get("description"),
+                    "title": json_ld.name,
+                    "description": json_ld.description,
                     "url": program_url,
-                    "thumbnails": json_ld_data.get("thumbnailUrl"),
+                    "thumbnails": json_ld.thumbnailUrl,
                     "startTime": start_time_string,
                     "endTime": end_time_string,
                     "isOnair": is_onair,
@@ -114,8 +140,8 @@ def dump_nicolive_community_live(
                     "iconUrl": community_icon_url,
                 },
                 "user": {
-                    "name": author.get("name"),
-                    "url": author.get("url"),
+                    "name": author_name,
+                    "url": author_url,
                     "iconUrl": user_icon_url,
                 },
             },
