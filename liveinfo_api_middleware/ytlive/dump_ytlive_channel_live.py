@@ -10,88 +10,88 @@ from pydantic import BaseModel
 JST = ZoneInfo("Asia/Tokyo")
 
 
-class YtliveDataChannelItemSnippetThumbnail(BaseModel):
+class YtliveApiChannelItemSnippetThumbnail(BaseModel):
     url: str
     width: int
     height: int
 
 
-class YtliveDataChannelItemSnippetThumbnails(BaseModel):
-    default: YtliveDataChannelItemSnippetThumbnail | None = None
-    medium: YtliveDataChannelItemSnippetThumbnail | None = None
-    high: YtliveDataChannelItemSnippetThumbnail | None = None
+class YtliveApiChannelItemSnippetThumbnails(BaseModel):
+    default: YtliveApiChannelItemSnippetThumbnail | None = None
+    medium: YtliveApiChannelItemSnippetThumbnail | None = None
+    high: YtliveApiChannelItemSnippetThumbnail | None = None
 
 
-class YtliveDataChannelItemSnippet(BaseModel):
+class YtliveApiChannelItemSnippet(BaseModel):
     customUrl: str | None = None
-    thumbnails: YtliveDataChannelItemSnippetThumbnails | None = None
+    thumbnails: YtliveApiChannelItemSnippetThumbnails | None = None
 
 
-class YtliveDataChannelItem(BaseModel):
-    snippet: YtliveDataChannelItemSnippet | None = None
+class YtliveApiChannelItem(BaseModel):
+    snippet: YtliveApiChannelItemSnippet | None = None
 
 
-class YtliveDataChannel(BaseModel):
-    items: list[YtliveDataChannelItem] | None = None
+class YtliveApiChannel(BaseModel):
+    items: list[YtliveApiChannelItem] | None = None
 
 
-class YtliveDataSearchItemSnippet(BaseModel):
+class YtliveApiSearchItemSnippet(BaseModel):
     liveBroadcastContent: str
 
 
-class YtliveDataSearchItemId(BaseModel):
+class YtliveApiSearchItemId(BaseModel):
     videoId: str
 
 
-class YtliveDataSearchItem(BaseModel):
-    id: YtliveDataSearchItemId
-    snippet: YtliveDataSearchItemSnippet | None = None
+class YtliveApiSearchItem(BaseModel):
+    id: YtliveApiSearchItemId
+    snippet: YtliveApiSearchItemSnippet | None = None
 
 
-class YtliveDataSearch(BaseModel):
-    items: list[YtliveDataSearchItem] | None = None
+class YtliveApiSearch(BaseModel):
+    items: list[YtliveApiSearchItem] | None = None
 
 
-class YtliveDataVideoItemLiveStreamingDetails(BaseModel):
+class YtliveApiVideoItemLiveStreamingDetails(BaseModel):
     actualStartTime: str
     actualEndTime: str
 
 
-class YtliveDataVideoItemSnippetThumbnail(BaseModel):
+class YtliveApiVideoItemSnippetThumbnail(BaseModel):
     url: str
     width: int
     height: int
 
 
-class YtliveDataVideoItemSnippetThumbnails(BaseModel):
-    default: YtliveDataVideoItemSnippetThumbnail | None = None
-    medium: YtliveDataVideoItemSnippetThumbnail | None = None
-    high: YtliveDataVideoItemSnippetThumbnail | None = None
-    standard: YtliveDataVideoItemSnippetThumbnail | None = None
-    maxres: YtliveDataVideoItemSnippetThumbnail | None = None
+class YtliveApiVideoItemSnippetThumbnails(BaseModel):
+    default: YtliveApiVideoItemSnippetThumbnail | None = None
+    medium: YtliveApiVideoItemSnippetThumbnail | None = None
+    high: YtliveApiVideoItemSnippetThumbnail | None = None
+    standard: YtliveApiVideoItemSnippetThumbnail | None = None
+    maxres: YtliveApiVideoItemSnippetThumbnail | None = None
 
 
-class YtliveDataVideoItemSnippet(BaseModel):
+class YtliveApiVideoItemSnippet(BaseModel):
     title: str | None = None
     description: str | None = None
     channelId: str | None = None
     channelTitle: str | None = None
-    thumbnails: YtliveDataVideoItemSnippetThumbnails | None = None
+    thumbnails: YtliveApiVideoItemSnippetThumbnails | None = None
 
 
-class YtliveDataVideoItemStatus(BaseModel):
+class YtliveApiVideoItemStatus(BaseModel):
     privacyStatus: Literal["public", "private", "unlisted"]
 
 
-class YtliveDataVideoItem(BaseModel):
+class YtliveApiVideoItem(BaseModel):
     id: str
-    status: YtliveDataVideoItemStatus | None = None
-    snippet: YtliveDataVideoItemSnippet | None = None
-    liveStreamingDetails: YtliveDataVideoItemLiveStreamingDetails | None = None
+    status: YtliveApiVideoItemStatus | None = None
+    snippet: YtliveApiVideoItemSnippet | None = None
+    liveStreamingDetails: YtliveApiVideoItemLiveStreamingDetails | None = None
 
 
-class YtliveDataVideo(BaseModel):
-    items: list[YtliveDataVideoItem] | None = None
+class YtliveApiVideo(BaseModel):
+    items: list[YtliveApiVideoItem] | None = None
 
 
 def dump_ytlive_channel_live(
@@ -113,13 +113,13 @@ def dump_ytlive_channel_live(
         },
     )
     channel_api_dict = channel_api_response.json()
-    channel_api_data = YtliveDataChannel.model_validate(channel_api_dict)
+    channel_api_data = YtliveApiChannel.model_validate(channel_api_dict)
 
     channel_list_items = channel_api_data.items
     channel = channel_list_items[0] if channel_list_items is not None else None
 
     channel_custom_url: str | None = None
-    channel_thumbnails: YtliveDataChannelItemSnippetThumbnails | None = None
+    channel_thumbnails: YtliveApiChannelItemSnippetThumbnails | None = None
     if channel is not None:
         if channel.snippet is not None:
             channel_custom_url = channel.snippet.customUrl
@@ -141,7 +141,7 @@ def dump_ytlive_channel_live(
         },
     )
     search_api_dict = search_response.json()
-    search_api_data = YtliveDataSearch.model_validate(search_api_dict)
+    search_api_data = YtliveApiSearch.model_validate(search_api_dict)
 
     search_list_items = (
         search_api_data.items if search_api_data.items is not None else []
@@ -160,10 +160,10 @@ def dump_ytlive_channel_live(
         },
     )
     video_api_dict = video_api_response.json()
-    video_api_data = YtliveDataVideo.model_validate(video_api_dict)
+    video_api_data = YtliveApiVideo.model_validate(video_api_dict)
 
     video_list_items = video_api_data.items if video_api_data.items is not None else []
-    live_items: list[YtliveDataVideoItem] = []
+    live_items: list[YtliveApiVideoItem] = []
     for video_item in video_list_items:
         video_id = video_item.id
 
@@ -171,7 +171,7 @@ def dump_ytlive_channel_live(
             # 非公開・限定公開のライブ配信・動画は対象にしない
             continue
 
-        search_item: YtliveDataSearchItem = next(
+        search_item: YtliveApiSearchItem = next(
             filter(
                 lambda search_item: search_item.id.videoId == video_id,
                 search_list_items,
@@ -195,7 +195,7 @@ def dump_ytlive_channel_live(
 
     # 最新とその1つ前のライブ番組の順番が交換されるYouTubeの謎仕様の対策（再エンコード処理のせい？）
     # 実際の放送時間に基づいてソートし直す
-    active_video_item: YtliveDataVideoItem | None = None
+    active_video_item: YtliveApiVideoItem | None = None
     max_start_time: datetime | None = None
     for video_item in live_items:
         start_time_string: str | None = None
@@ -215,7 +215,7 @@ def dump_ytlive_channel_live(
     # Extract data from active_video_item
     active_video_id = active_video_item.id if active_video_item is not None else None
 
-    active_search_item: YtliveDataSearchItem | None = next(
+    active_search_item: YtliveApiSearchItem | None = next(
         filter(
             lambda search_item: (
                 search_item is not None and search_item.id.videoId == active_video_id
@@ -236,7 +236,7 @@ def dump_ytlive_channel_live(
     description: str | None = None
     channel_id: str | None = None
     channel_name: str | None = None
-    thumbnails: YtliveDataVideoItemSnippetThumbnails | None = None
+    thumbnails: YtliveApiVideoItemSnippetThumbnails | None = None
     if active_video_item is not None:
         if active_video_item.snippet is not None:
             title = active_video_item.snippet.title
