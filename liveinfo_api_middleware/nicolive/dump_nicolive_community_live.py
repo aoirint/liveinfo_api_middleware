@@ -114,7 +114,15 @@ def dump_nicolive_community_live(
             if embedded_data.program.supplier.icons is not None:
                 user_icon_url = embedded_data.program.supplier.icons.uri150x150
 
-        description = embedded_data.program.description
+        description_html = embedded_data.program.description
+
+        bs = BeautifulSoup(description_html, "html5lib")
+
+        # keep line breaks
+        for br_tag in bs.select("br"):
+            br_tag.replace_with("\n")
+
+        description = bs.text
 
     community_name: str | None = None
     community_url: str | None = None
