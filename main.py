@@ -21,7 +21,10 @@ CORS_ALLOW_ORIGINS = os.environ["CORS_ALLOW_ORIGINS"].split(",")
 
 USERAGENT = f"aoirint_liveinfo_api_middleware/{LIVEINFO_VERSION}"
 
-app = FastAPI()
+app = FastAPI(
+    title="Live Info API Middleware",
+    version=LIVEINFO_VERSION,
+)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ALLOW_ORIGINS,
