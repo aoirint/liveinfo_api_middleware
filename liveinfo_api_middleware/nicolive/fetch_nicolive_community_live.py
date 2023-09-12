@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 from zoneinfo import ZoneInfo
 
 import requests

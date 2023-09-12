@@ -1,6 +1,4 @@
-import json
 from datetime import datetime
-from pathlib import Path
 from typing import Literal
 from zoneinfo import ZoneInfo
 
@@ -303,10 +301,6 @@ def fetch_ytlive_channel_live(
             id=channel_id,
             name=channel_name,
             url=channel_url,
-            thumbnails=(
-                channel_thumbnails.model_dump()
-                if channel_thumbnails is not None
-                else None
-            ),
+            thumbnails=channel_thumbnails,
         ),
     )

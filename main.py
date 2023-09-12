@@ -5,7 +5,6 @@ from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
 from liveinfo_api_middleware import __VERSION__ as LIVEINFO_VERSION
 from liveinfo_api_middleware.nicolive import (
     NicoliveCommunityLive,
