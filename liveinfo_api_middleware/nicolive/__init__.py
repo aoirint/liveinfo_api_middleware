@@ -1,4 +1,4 @@
-from .dump_nicolive_community_live import (
+from .fetch_nicolive_community_live import (
     NicoliveApiCommunityLiveOnair,
     NicoliveApiCommunityLiveOnairData,
     NicoliveApiCommunityLiveOnairLive,
@@ -14,7 +14,7 @@ from .dump_nicolive_community_live import (
     NicolivePageWatchJsonLd,
     NicolivePageWatchJsonLdAuthor,
     NicolivePageWatchJsonLdPublication,
-    dump_nicolive_community_live,
+    fetch_nicolive_community_live,
 )
 
 __all__ = [
@@ -33,5 +33,5 @@ __all__ = [
     "NicoliveCommunityLiveCommunity",
     "NicoliveCommunityLiveUser",
     "NicoliveCommunityLive",
-    "dump_nicolive_community_live",
+    "fetch_nicolive_community_live",
 ]

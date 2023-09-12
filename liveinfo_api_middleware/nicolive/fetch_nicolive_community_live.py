@@ -91,11 +91,10 @@ class NicoliveCommunityLive(BaseModel):
     user: NicoliveCommunityLiveUser
 
 
-def dump_nicolive_community_live(
+def fetch_nicolive_community_live(
     nicolive_community_id: str,
     useragent: str,
-    dump_path: Path,
-) -> None:
+) -> NicoliveCommunityLive:
     onair_response = requests.get(
         f"https://com.nicovideo.jp/api/v1/communities/{nicolive_community_id}/lives/onair.json",
         headers={
@@ -175,28 +174,24 @@ def dump_nicolive_community_live(
     og_url_tag = bs.find("meta", attrs={"property": "og:url"})
     program_url = og_url_tag.get("content") if og_url_tag is not None else None
 
-    dump_path.parent.mkdir(parents=True, exist_ok=True)
-    dump_path.write_text(
-        NicoliveCommunityLive(
-            program=NicoliveCommunityLiveProgram(
-                title=json_ld.name,
-                description=description,
-                url=program_url,
-                thumbnails=json_ld.thumbnailUrl,
-                startTime=start_time_string,
-                endTime=end_time_string,
-                isOnair=is_onair,
-            ),
-            community=NicoliveCommunityLiveCommunity(
-                name=community_name,
-                url=community_url,
-                iconUrl=community_icon_url,
-            ),
-            user=NicoliveCommunityLiveUser(
-                name=author_name,
-                url=author_url,
-                iconUrl=user_icon_url,
-            ),
-        ).model_dump_json(),
-        encoding="utf-8",
+    return NicoliveCommunityLive(
+        program=NicoliveCommunityLiveProgram(
+            title=json_ld.name,
+            description=description,
+            url=program_url,
+            thumbnails=json_ld.thumbnailUrl,
+            startTime=start_time_string,
+            endTime=end_time_string,
+            isOnair=is_onair,
+        ),
+        community=NicoliveCommunityLiveCommunity(
+            name=community_name,
+            url=community_url,
+            iconUrl=community_icon_url,
+        ),
+        user=NicoliveCommunityLiveUser(
+            name=author_name,
+            url=author_url,
+            iconUrl=user_icon_url,
+        ),
     )

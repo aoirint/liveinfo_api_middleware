@@ -3,11 +3,14 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from liveinfo_api_middleware import __VERSION__ as LIVEINFO_VERSION
-from liveinfo_api_middleware.nicolive import dump_nicolive_community_live
+from liveinfo_api_middleware.nicolive import (
+    NicoliveCommunityLive,
+    fetch_nicolive_community_live,
+)
 from liveinfo_api_middleware.ytlive import dump_ytlive_channel_live
 
 YTLIVE_CHANNEL_ID = os.environ["YTLIVE_CHANNEL_ID"]
@@ -40,15 +43,21 @@ ytlive_last_fetched: Optional[datetime] = None
 ytlive_interval = timedelta(seconds=60)
 
 
-@app.get("/v1/nicolive")
-def v1_nicolive() -> FileResponse:
+@app.get(
+    "/v1/nicolive",
+    response_model=NicoliveCommunityLive,
+)
+def v1_nicolive() -> NicoliveCommunityLive:
     global nicolive_last_fetched
+
+    nicolive_community_live: NicoliveCommunityLive | None = None
 
     now = datetime.now(tz=timezone.utc)
     if (
         nicolive_last_fetched is None
         or nicolive_interval <= now - nicolive_last_fetched
     ):
+        # cache expired
         nicolive_last_fetched_string = (
             nicolive_last_fetched.isoformat()
             if nicolive_last_fetched is not None
@@ -60,15 +69,34 @@ def v1_nicolive() -> FileResponse:
         )
 
         try:
-            dump_nicolive_community_live(
+            nicolive_community_live = fetch_nicolive_community_live(
                 nicolive_community_id=NICOLIVE_COMMUNITY_ID,
                 useragent=USERAGENT,
-                dump_path=NICOLIVE_DUMP_PATH,
+            )
+
+            NICOLIVE_DUMP_PATH.parent.mkdir(parents=True, exist_ok=True)
+            NICOLIVE_DUMP_PATH.write_text(
+                nicolive_community_live.model_dump_json(),
+                encoding="utf-8",
             )
         finally:
             nicolive_last_fetched = now
 
-    return FileResponse(NICOLIVE_DUMP_PATH)
+    if nicolive_community_live is None:
+        # cache not expired or error fallback
+        if NICOLIVE_DUMP_PATH.exists():
+            nicolive_community_live = NicoliveCommunityLive.model_validate_json(
+                NICOLIVE_DUMP_PATH.read_text(encoding="utf-8")
+            )
+
+    if nicolive_community_live is None:
+        # return 404 if not found
+        raise HTTPException(
+            status_code=404,
+            detail="Nicolive Community Live not found",
+        )
+
+    return nicolive_community_live
 
 
 @app.get("/v1/ytlive")
