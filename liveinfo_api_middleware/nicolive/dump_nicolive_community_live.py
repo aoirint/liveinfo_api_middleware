@@ -33,7 +33,6 @@ class NicoliveWatchJsonLdAuthor(BaseModel):
 
 class NicoliveWatchJsonLd(BaseModel):
     name: str | None = None
-    description: str | None = None
     thumbnailUrl: list[str] | None = None
     publication: NicoliveWatchJsonLdPublication | None = None
     author: NicoliveWatchJsonLdAuthor | None = None
@@ -48,6 +47,7 @@ class NicoliveWatchEmbeddedDataSupplier(BaseModel):
 
 
 class NicoliveWatchEmbeddedDataProgram(BaseModel):
+    description: str | None = None
     supplier: NicoliveWatchEmbeddedDataSupplier | None = None
 
 
@@ -108,10 +108,13 @@ def dump_nicolive_community_live(
     embedded_data = NicoliveWatchEmbeddedData.model_validate(embedded_data_dict)
 
     user_icon_url: str | None = None
+    description: str | None = None
     if embedded_data.program is not None:
         if embedded_data.program.supplier is not None:
             if embedded_data.program.supplier.icons is not None:
                 user_icon_url = embedded_data.program.supplier.icons.uri150x150
+
+        description = embedded_data.program.description
 
     community_name: str | None = None
     community_url: str | None = None
@@ -142,7 +145,7 @@ def dump_nicolive_community_live(
             {
                 "program": {
                     "title": json_ld.name,
-                    "description": json_ld.description,
+                    "description": description,
                     "url": program_url,
                     "thumbnails": json_ld.thumbnailUrl,
                     "startTime": start_time_string,
