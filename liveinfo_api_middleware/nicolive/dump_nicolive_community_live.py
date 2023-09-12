@@ -9,58 +9,58 @@ from pydantic import BaseModel
 JST = ZoneInfo("Asia/Tokyo")
 
 
-class NicoliveCommunityLiveOnairLive(BaseModel):
+class NicoliveApiCommunityLiveOnairLive(BaseModel):
     status: str
 
 
-class NicoliveCommunityLiveOnairData(BaseModel):
-    live: NicoliveCommunityLiveOnairLive | None = None
+class NicoliveApiCommunityLiveOnairData(BaseModel):
+    live: NicoliveApiCommunityLiveOnairLive | None = None
 
 
-class NicoliveCommunityLiveOnair(BaseModel):
-    data: NicoliveCommunityLiveOnairData | None = None
+class NicoliveApiCommunityLiveOnair(BaseModel):
+    data: NicoliveApiCommunityLiveOnairData | None = None
 
 
-class NicoliveWatchJsonLdPublication(BaseModel):
+class NicolivePageWatchJsonLdPublication(BaseModel):
     startDate: str | None = None
     endDate: str | None = None
 
 
-class NicoliveWatchJsonLdAuthor(BaseModel):
+class NicolivePageWatchJsonLdAuthor(BaseModel):
     name: str | None = None
     url: str | None = None
 
 
-class NicoliveWatchJsonLd(BaseModel):
+class NicolivePageWatchJsonLd(BaseModel):
     name: str | None = None
     thumbnailUrl: list[str] | None = None
-    publication: NicoliveWatchJsonLdPublication | None = None
-    author: NicoliveWatchJsonLdAuthor | None = None
+    publication: NicolivePageWatchJsonLdPublication | None = None
+    author: NicolivePageWatchJsonLdAuthor | None = None
 
 
-class NicoliveWatchEmbeddedDataSupplierIcons(BaseModel):
+class NicolivePageWatchEmbeddedDataSupplierIcons(BaseModel):
     uri150x150: str | None = None
 
 
-class NicoliveWatchEmbeddedDataSupplier(BaseModel):
-    icons: NicoliveWatchEmbeddedDataSupplierIcons | None = None
+class NicolivePageWatchEmbeddedDataSupplier(BaseModel):
+    icons: NicolivePageWatchEmbeddedDataSupplierIcons | None = None
 
 
-class NicoliveWatchEmbeddedDataProgram(BaseModel):
+class NicolivePageWatchEmbeddedDataProgram(BaseModel):
     description: str | None = None
-    supplier: NicoliveWatchEmbeddedDataSupplier | None = None
+    supplier: NicolivePageWatchEmbeddedDataSupplier | None = None
 
 
-class NicoliveWatchEmbeddedDataSocialGroup(BaseModel):
+class NicolivePageWatchEmbeddedDataSocialGroup(BaseModel):
     id: str | None = None
     name: str | None = None
     thumbnailImageUrl: str | None = None
     socialGroupPageUrl: str | None = None
 
 
-class NicoliveWatchEmbeddedData(BaseModel):
-    program: NicoliveWatchEmbeddedDataProgram | None = None
-    socialGroup: NicoliveWatchEmbeddedDataSocialGroup | None = None
+class NicolivePageWatchEmbeddedData(BaseModel):
+    program: NicolivePageWatchEmbeddedDataProgram | None = None
+    socialGroup: NicolivePageWatchEmbeddedDataSocialGroup | None = None
 
 
 class NicoliveCommunityLiveProgram(BaseModel):
@@ -105,7 +105,7 @@ def dump_nicolive_community_live(
     # onair_response.raise_for_status()
     is_onair = False
     if onair_response.status_code == 200:
-        onair_live = NicoliveCommunityLiveOnair.model_validate(onair_response.json())
+        onair_live = NicoliveApiCommunityLiveOnair.model_validate(onair_response.json())
         if onair_live.data is not None:
             if onair_live.data.live is not None:
                 is_onair = onair_live.data.live.status == "ON_AIR"
@@ -128,12 +128,12 @@ def dump_nicolive_community_live(
     json_ld_string = json_ld_tag.string
 
     json_ld_dict = json.loads(json_ld_string)
-    json_ld = NicoliveWatchJsonLd.model_validate(json_ld_dict)
+    json_ld = NicolivePageWatchJsonLd.model_validate(json_ld_dict)
 
     embedded_data_tag = bs.find(id="embedded-data")
     embedded_data_string = embedded_data_tag.attrs.get("data-props")
     embedded_data_dict = json.loads(embedded_data_string)
-    embedded_data = NicoliveWatchEmbeddedData.model_validate(embedded_data_dict)
+    embedded_data = NicolivePageWatchEmbeddedData.model_validate(embedded_data_dict)
 
     user_icon_url: str | None = None
     description: str | None = None

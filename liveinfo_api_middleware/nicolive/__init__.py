@@ -1,19 +1,19 @@
 from .dump_nicolive_community_live import (
-    NicoliveCommunityLiveOnairData,
-    NicoliveWatchEmbeddedData,
-    NicoliveWatchEmbeddedDataProgram,
-    NicoliveWatchEmbeddedDataSocialGroup,
-    NicoliveWatchEmbeddedDataSupplier,
-    NicoliveWatchEmbeddedDataSupplierIcons,
+    NicoliveApiCommunityLiveOnairData,
+    NicolivePageWatchEmbeddedData,
+    NicolivePageWatchEmbeddedDataProgram,
+    NicolivePageWatchEmbeddedDataSocialGroup,
+    NicolivePageWatchEmbeddedDataSupplier,
+    NicolivePageWatchEmbeddedDataSupplierIcons,
     dump_nicolive_community_live,
 )
 
 __all__ = [
-    "NicoliveWatchEmbeddedData",
-    "NicoliveWatchEmbeddedDataProgram",
-    "NicoliveWatchEmbeddedDataSocialGroup",
-    "NicoliveWatchEmbeddedDataSupplier",
-    "NicoliveWatchEmbeddedDataSupplierIcons",
-    "NicoliveCommunityLiveOnairData",
+    "NicolivePageWatchEmbeddedData",
+    "NicolivePageWatchEmbeddedDataProgram",
+    "NicolivePageWatchEmbeddedDataSocialGroup",
+    "NicolivePageWatchEmbeddedDataSupplier",
+    "NicolivePageWatchEmbeddedDataSupplierIcons",
+    "NicoliveApiCommunityLiveOnairData",
     "dump_nicolive_community_live",
 ]
