@@ -14,7 +14,7 @@ def dump_nicolive_community_live(
     nicolive_community_id: str,
     useragent: str,
     dump_path: Path,
-):
+) -> None:
     onair_response = requests.get(
         f"https://com.nicovideo.jp/api/v1/communities/{nicolive_community_id}/lives/onair.json",
         headers={
@@ -108,7 +108,7 @@ def dump_ytlive_channel_live(
     ytlive_api_key: str,
     useragent: str,
     dump_path: Path,
-):
+) -> None:
     # チャンネル情報を取得（アイコン）
     channels_response = requests.get(
         "https://www.googleapis.com/youtube/v3/channels",

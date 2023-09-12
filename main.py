@@ -36,7 +36,7 @@ ytlive_interval = timedelta(seconds=60)
 
 
 @app.get("/v1/nicolive")
-def v1_nicolive():
+def v1_nicolive() -> FileResponse:
     global nicolive_last_fetched
 
     now = datetime.now(tz=timezone.utc)
@@ -66,7 +66,7 @@ def v1_nicolive():
 
 
 @app.get("/v1/ytlive")
-def v1_ytlive():
+def v1_ytlive() -> FileResponse:
     global ytlive_last_fetched
 
     now = datetime.now(tz=timezone.utc)
