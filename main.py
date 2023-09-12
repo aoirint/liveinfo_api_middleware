@@ -6,7 +6,8 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
-from liveinfo_api_middleware import liveinfo_api
+from liveinfo_api_middleware.nicolive import dump_nicolive_community_live
+from liveinfo_api_middleware.ytlive import dump_ytlive_channel_live
 
 YTLIVE_CHANNEL_ID = os.environ["YTLIVE_CHANNEL_ID"]
 YTLIVE_API_KEY = os.environ["YTLIVE_API_KEY"]
@@ -55,7 +56,7 @@ def v1_nicolive() -> FileResponse:
         )
 
         try:
-            liveinfo_api.dump_nicolive_community_live(
+            dump_nicolive_community_live(
                 nicolive_community_id=NICOLIVE_COMMUNITY_ID,
                 useragent=USERAGENT,
                 dump_path=NICOLIVE_DUMP_PATH,
@@ -82,7 +83,7 @@ def v1_ytlive() -> FileResponse:
         )
 
         try:
-            liveinfo_api.dump_ytlive_channel_live(
+            dump_ytlive_channel_live(
                 ytlive_channel_id=YTLIVE_CHANNEL_ID,
                 ytlive_api_key=YTLIVE_API_KEY,
                 useragent=USERAGENT,
