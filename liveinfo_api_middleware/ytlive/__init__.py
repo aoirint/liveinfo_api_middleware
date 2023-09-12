@@ -1,4 +1,4 @@
-from .dump_ytlive_channel_live import (
+from .fetch_ytlive_channel_live import (
     YtliveApiChannel,
     YtliveApiChannelItem,
     YtliveApiChannelItemSnippet,
@@ -18,7 +18,7 @@ from .dump_ytlive_channel_live import (
     YtliveChannelLive,
     YtliveChannelLiveChannel,
     YtliveChannelLiveProgram,
-    dump_ytlive_channel_live,
+    fetch_ytlive_channel_live,
 )
 
 __all__ = [
@@ -41,5 +41,5 @@ __all__ = [
     "YtliveChannelLiveProgram",
     "YtliveChannelLiveChannel",
     "YtliveChannelLive",
-    "dump_ytlive_channel_live",
+    "fetch_ytlive_channel_live",
 ]

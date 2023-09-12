@@ -11,7 +11,7 @@ from liveinfo_api_middleware.nicolive import (
     NicoliveCommunityLive,
     fetch_nicolive_community_live,
 )
-from liveinfo_api_middleware.ytlive import dump_ytlive_channel_live
+from liveinfo_api_middleware.ytlive import YtliveChannelLive, fetch_ytlive_channel_live
 
 YTLIVE_CHANNEL_ID = os.environ["YTLIVE_CHANNEL_ID"]
 YTLIVE_API_KEY = os.environ["YTLIVE_API_KEY"]
@@ -99,9 +99,14 @@ def v1_nicolive() -> NicoliveCommunityLive:
     return nicolive_community_live
 
 
-@app.get("/v1/ytlive")
-def v1_ytlive() -> FileResponse:
+@app.get(
+    "/v1/ytlive",
+    response_model=YtliveChannelLive,
+)
+def v1_ytlive() -> YtliveChannelLive:
     global ytlive_last_fetched
+
+    ytlive_channel_live: YtliveChannelLive | None = None
 
     now = datetime.now(tz=timezone.utc)
     if ytlive_last_fetched is None or ytlive_interval <= now - ytlive_last_fetched:
@@ -115,13 +120,32 @@ def v1_ytlive() -> FileResponse:
         )
 
         try:
-            dump_ytlive_channel_live(
+            ytlive_channel_live = fetch_ytlive_channel_live(
                 ytlive_channel_id=YTLIVE_CHANNEL_ID,
                 ytlive_api_key=YTLIVE_API_KEY,
                 useragent=USERAGENT,
-                dump_path=YTLIVE_DUMP_PATH,
+            )
+
+            YTLIVE_DUMP_PATH.parent.mkdir(parents=True, exist_ok=True)
+            YTLIVE_DUMP_PATH.write_text(
+                ytlive_channel_live.model_dump_json(),
+                encoding="utf-8",
             )
         finally:
             ytlive_last_fetched = now
 
-    return FileResponse(YTLIVE_DUMP_PATH)
+    if ytlive_channel_live is None:
+        # cache not expired or error fallback
+        if YTLIVE_DUMP_PATH.exists():
+            ytlive_channel_live = YtliveChannelLive.model_validate_json(
+                YTLIVE_DUMP_PATH.read_text(encoding="utf-8")
+            )
+
+    if ytlive_channel_live is None:
+        # return 404 if not found
+        raise HTTPException(
+            status_code=404,
+            detail="Ytlive Channel Live not found",
+        )
+
+    return ytlive_channel_live

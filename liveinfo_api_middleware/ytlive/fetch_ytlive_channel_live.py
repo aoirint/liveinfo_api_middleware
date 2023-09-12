@@ -117,12 +117,11 @@ class YtliveChannelLive(BaseModel):
     channel: YtliveChannelLiveChannel
 
 
-def dump_ytlive_channel_live(
+def fetch_ytlive_channel_live(
     ytlive_channel_id: str,
     ytlive_api_key: str,
     useragent: str,
-    dump_path: Path,
-) -> None:
+) -> YtliveChannelLive:
     # チャンネル情報を取得（アイコン）
     channel_api_response = requests.get(
         "https://www.googleapis.com/youtube/v3/channels",
@@ -287,31 +286,27 @@ def dump_ytlive_channel_live(
     if channel_custom_url is not None:
         channel_url = f"https://www.youtube.com/{channel_custom_url}"  # ハンドル名
 
-    dump_path.parent.mkdir(parents=True, exist_ok=True)
-    dump_path.write_text(
-        YtliveChannelLive(
-            program=YtliveChannelLiveProgram(
-                id=active_video_id,
-                title=title,
-                description=description,
-                url=f"https://www.youtube.com/watch?v={active_video_id}"
-                if active_video_id is not None
-                else None,
-                thumbnails=thumbnails,
-                startTime=active_video_item_start_time_string,
-                endTime=active_video_item_end_time_string,
-                isOnair=active_search_item_live_broadcast_content == "live",
+    return YtliveChannelLive(
+        program=YtliveChannelLiveProgram(
+            id=active_video_id,
+            title=title,
+            description=description,
+            url=f"https://www.youtube.com/watch?v={active_video_id}"
+            if active_video_id is not None
+            else None,
+            thumbnails=thumbnails,
+            startTime=active_video_item_start_time_string,
+            endTime=active_video_item_end_time_string,
+            isOnair=active_search_item_live_broadcast_content == "live",
+        ),
+        channel=YtliveChannelLiveChannel(
+            id=channel_id,
+            name=channel_name,
+            url=channel_url,
+            thumbnails=(
+                channel_thumbnails.model_dump()
+                if channel_thumbnails is not None
+                else None
             ),
-            channel=YtliveChannelLiveChannel(
-                id=channel_id,
-                name=channel_name,
-                url=channel_url,
-                thumbnails=(
-                    channel_thumbnails.model_dump()
-                    if channel_thumbnails is not None
-                    else None
-                ),
-            ),
-        ).model_dump_json(),
-        encoding="utf-8",
+        ),
     )
