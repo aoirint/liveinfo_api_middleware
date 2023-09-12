@@ -162,8 +162,9 @@ def dump_ytlive_channel_live(
     video_api_dict = video_api_response.json()
     video_api_data = YtliveDataVideo.model_validate(video_api_dict)
 
+    video_list_items = video_api_data.items if video_api_data.items is not None else []
     live_items: list[YtliveDataVideoItem] = []
-    for video_item in video_api_data.items:
+    for video_item in video_list_items:
         video_id = video_item.id
 
         if video_item.status is None or video_item.status.privacyStatus != "public":
@@ -212,10 +213,13 @@ def dump_ytlive_channel_live(
             max_start_time = start_time
 
     # Extract data from active_video_item
-    active_video_id = active_video_item.id
+    active_video_id = active_video_item.id if active_video_item is not None else None
+
     active_search_item: YtliveDataSearchItem | None = next(
         filter(
-            lambda search_item: search_item.id.videoId == active_video_id,
+            lambda search_item: (
+                search_item is not None and search_item.id.videoId == active_video_id
+            ),
             search_list_items,
         ),
         None,
@@ -233,18 +237,24 @@ def dump_ytlive_channel_live(
     channel_id: str | None = None
     channel_name: str | None = None
     thumbnails: YtliveDataVideoItemSnippetThumbnails | None = None
-    if active_video_item.snippet is not None:
-        title = active_video_item.snippet.title
-        description = active_video_item.snippet.description
-        channel_id = active_video_item.snippet.channelId
-        channel_name = active_video_item.snippet.channelTitle
-        thumbnails = active_video_item.snippet.thumbnails
+    if active_video_item is not None:
+        if active_video_item.snippet is not None:
+            title = active_video_item.snippet.title
+            description = active_video_item.snippet.description
+            channel_id = active_video_item.snippet.channelId
+            channel_name = active_video_item.snippet.channelTitle
+            thumbnails = active_video_item.snippet.thumbnails
 
-    start_time_string: str | None = None
-    end_time_string: str | None = None
-    if active_video_item.liveStreamingDetails is not None:
-        start_time_string = active_video_item.liveStreamingDetails.actualStartTime
-        end_time_string = active_video_item.liveStreamingDetails.actualEndTime
+    active_video_item_start_time_string: str | None = None
+    active_video_item_end_time_string: str | None = None
+    if active_video_item is not None:
+        if active_video_item.liveStreamingDetails is not None:
+            active_video_item_start_time_string = (
+                active_video_item.liveStreamingDetails.actualStartTime
+            )
+            active_video_item_end_time_string = (
+                active_video_item.liveStreamingDetails.actualEndTime
+            )
 
     channel_url = (
         f"https://www.youtube.com/channel/{channel_id}"
@@ -270,8 +280,8 @@ def dump_ytlive_channel_live(
                     "thumbnails": (
                         thumbnails.model_dump() if thumbnails is not None else None
                     ),
-                    "startTime": start_time_string,
-                    "endTime": end_time_string,
+                    "startTime": active_video_item_start_time_string,
+                    "endTime": active_video_item_end_time_string,
                     "isOnair": active_search_item_live_broadcast_content == "live",
                 },
                 "channel": {
