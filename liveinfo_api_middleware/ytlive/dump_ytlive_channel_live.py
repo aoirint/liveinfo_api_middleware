@@ -94,6 +94,29 @@ class YtliveApiVideo(BaseModel):
     items: list[YtliveApiVideoItem] | None = None
 
 
+class YtliveChannelLiveProgram(BaseModel):
+    id: str | None
+    title: str | None
+    description: str | None
+    url: str | None
+    thumbnails: YtliveApiVideoItemSnippetThumbnails | None
+    startTime: str | None
+    endTime: str | None
+    isOnair: bool | None
+
+
+class YtliveChannelLiveChannel(BaseModel):
+    id: str | None
+    name: str | None
+    url: str | None
+    thumbnails: YtliveApiChannelItemSnippetThumbnails | None
+
+
+class YtliveChannelLive(BaseModel):
+    program: YtliveChannelLiveProgram
+    channel: YtliveChannelLiveChannel
+
+
 def dump_ytlive_channel_live(
     ytlive_channel_id: str,
     ytlive_api_key: str,
@@ -266,36 +289,29 @@ def dump_ytlive_channel_live(
 
     dump_path.parent.mkdir(parents=True, exist_ok=True)
     dump_path.write_text(
-        json.dumps(
-            {
-                "program": {
-                    "id": active_video_id,
-                    "title": title,
-                    "description": description,
-                    "url": (
-                        f"https://www.youtube.com/watch?v={active_video_id}"
-                        if active_video_id is not None
-                        else None
-                    ),
-                    "thumbnails": (
-                        thumbnails.model_dump() if thumbnails is not None else None
-                    ),
-                    "startTime": active_video_item_start_time_string,
-                    "endTime": active_video_item_end_time_string,
-                    "isOnair": active_search_item_live_broadcast_content == "live",
-                },
-                "channel": {
-                    "id": channel_id,
-                    "name": channel_name,
-                    "url": channel_url,
-                    "thumbnails": (
-                        channel_thumbnails.model_dump()
-                        if channel_thumbnails is not None
-                        else None
-                    ),
-                },
-            },
-            ensure_ascii=False,
-        ),
+        YtliveChannelLive(
+            program=YtliveChannelLiveProgram(
+                id=active_video_id,
+                title=title,
+                description=description,
+                url=f"https://www.youtube.com/watch?v={active_video_id}"
+                if active_video_id is not None
+                else None,
+                thumbnails=thumbnails,
+                startTime=active_video_item_start_time_string,
+                endTime=active_video_item_end_time_string,
+                isOnair=active_search_item_live_broadcast_content == "live",
+            ),
+            channel=YtliveChannelLiveChannel(
+                id=channel_id,
+                name=channel_name,
+                url=channel_url,
+                thumbnails=(
+                    channel_thumbnails.model_dump()
+                    if channel_thumbnails is not None
+                    else None
+                ),
+            ),
+        ).model_dump_json(),
         encoding="utf-8",
     )
