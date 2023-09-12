@@ -6,6 +6,7 @@ from typing import Optional
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
+from liveinfo_api_middleware import __VERSION__ as LIVEINFO_VERSION
 from liveinfo_api_middleware.nicolive import dump_nicolive_community_live
 from liveinfo_api_middleware.ytlive import dump_ytlive_channel_live
 
@@ -18,7 +19,7 @@ NICOLIVE_DUMP_PATH = Path(os.environ["NICOLIVE_DUMP_PATH"])
 
 CORS_ALLOW_ORIGINS = os.environ["CORS_ALLOW_ORIGINS"].split(",")
 
-USERAGENT = "aoirint_liveinfo_api_middleware/0.0.0"
+USERAGENT = f"aoirint_liveinfo_api_middleware/{LIVEINFO_VERSION}"
 
 app = FastAPI()
 app.add_middleware(
