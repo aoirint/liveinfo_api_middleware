@@ -36,7 +36,7 @@ class NicoliveWatchJsonLdAuthor(BaseModel):
 class NicoliveWatchJsonLd(BaseModel):
     name: str | None = None
     description: str | None = None
-    thumbnailUrl: str | None = None
+    thumbnailUrl: list[str] | None = None
     publication: NicoliveWatchJsonLdPublication | None = None
     author: NicoliveWatchJsonLdAuthor | None = None
 
