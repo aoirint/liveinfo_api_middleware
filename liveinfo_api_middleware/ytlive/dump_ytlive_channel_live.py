@@ -52,6 +52,48 @@ class YtliveDataSearch(BaseModel):
     items: list[YtliveDataSearchItem] | None = None
 
 
+class YtliveDataVideoItemLiveStreamingDetails(BaseModel):
+    actualStartTime: str
+    actualEndTime: str
+
+
+class YtliveDataVideoItemSnippetThumbnail(BaseModel):
+    url: str
+    width: int
+    height: int
+
+
+class YtliveDataVideoItemSnippetThumbnails(BaseModel):
+    default: YtliveDataVideoItemSnippetThumbnail | None = None
+    medium: YtliveDataVideoItemSnippetThumbnail | None = None
+    high: YtliveDataVideoItemSnippetThumbnail | None = None
+    standard: YtliveDataVideoItemSnippetThumbnail | None = None
+    maxres: YtliveDataVideoItemSnippetThumbnail | None = None
+
+
+class YtliveDataVideoItemSnippet(BaseModel):
+    title: str | None = None
+    description: str | None = None
+    channelId: str | None = None
+    channelTitle: str | None = None
+    thumbnails: YtliveDataVideoItemSnippetThumbnails | None = None
+
+
+class YtliveDataVideoItemStatus(BaseModel):
+    privacyStatus: Literal["public", "private", "unlisted"]
+
+
+class YtliveDataVideoItem(BaseModel):
+    id: str
+    status: YtliveDataVideoItemStatus | None = None
+    snippet: YtliveDataVideoItemSnippet | None = None
+    liveStreamingDetails: YtliveDataVideoItemLiveStreamingDetails | None = None
+
+
+class YtliveDataVideo(BaseModel):
+    items: list[YtliveDataVideoItem] | None = None
+
+
 def dump_ytlive_channel_live(
     ytlive_channel_id: str,
     ytlive_api_key: str,
@@ -106,7 +148,7 @@ def dump_ytlive_channel_live(
     )
 
     # 各動画の詳細を取得
-    videos_response = requests.get(
+    video_api_response = requests.get(
         "https://www.googleapis.com/youtube/v3/videos",
         params={
             "key": ytlive_api_key,
@@ -117,18 +159,14 @@ def dump_ytlive_channel_live(
             "User-Agent": useragent,
         },
     )
-    videos_data = videos_response.json()
+    video_api_dict = video_api_response.json()
+    video_api_data = YtliveDataVideo.model_validate(video_api_dict)
 
-    live_items = []
-    for video_item in videos_data["items"]:
-        video_id = video_item["id"]
+    live_items: list[YtliveDataVideoItem] = []
+    for video_item in video_api_data.items:
+        video_id = video_item.id
 
-        status_obj = video_item["status"]
-
-        privacy_status: Literal["public", "private", "unlisted"] = status_obj.get(
-            "privacyStatus"
-        )
-        if privacy_status != "public":
+        if video_item.status is None or video_item.status.privacyStatus != "public":
             # 非公開・限定公開のライブ配信・動画は対象にしない
             continue
 
@@ -143,24 +181,26 @@ def dump_ytlive_channel_live(
         if search_item.snippet is not None:
             live_broadcast_content = search_item.snippet.liveBroadcastContent
 
-        live_streming_details_obj = video_item.get("liveStreamingDetails")
-
         if live_broadcast_content == "live":
             # ライブ配信中の番組がある場合、選択する
             live_items.append(video_item)
 
-        if live_broadcast_content == "none" and live_streming_details_obj is not None:
+        if (
+            live_broadcast_content == "none"
+            and video_item.liveStreamingDetails is not None
+        ):
             # 終了済みのライブ番組またはプレミア公開番組がある場合、選択する
             live_items.append(video_item)
 
     # 最新とその1つ前のライブ番組の順番が交換されるYouTubeの謎仕様の対策（再エンコード処理のせい？）
     # 実際の放送時間に基づいてソートし直す
-    active_video_item = {}
-    max_start_time = None
+    active_video_item: YtliveDataVideoItem | None = None
+    max_start_time: datetime | None = None
     for video_item in live_items:
-        start_time_string = video_item.get("liveStreamingDetails", {}).get(
-            "actualStartTime"
-        )
+        start_time_string: str | None = None
+        if video_item.liveStreamingDetails is not None:
+            start_time_string = video_item.liveStreamingDetails.actualStartTime
+
         start_time = (
             datetime.fromisoformat(start_time_string)
             if start_time_string is not None
@@ -172,7 +212,7 @@ def dump_ytlive_channel_live(
             max_start_time = start_time
 
     # Extract data from active_video_item
-    active_video_id = active_video_item.get("id")
+    active_video_id = active_video_item.id
     active_search_item: YtliveDataSearchItem | None = next(
         filter(
             lambda search_item: search_item.id.videoId == active_video_id,
@@ -181,9 +221,6 @@ def dump_ytlive_channel_live(
         None,
     )
 
-    snippet_obj = active_video_item.get("snippet")
-    live_streming_details_obj = active_video_item.get("liveStreamingDetails", {})
-
     active_search_item_live_broadcast_content: str | None = None
     if active_search_item is not None:
         if active_search_item.snippet is not None:
@@ -191,16 +228,23 @@ def dump_ytlive_channel_live(
                 active_search_item.snippet.liveBroadcastContent
             )
 
-    title = snippet_obj.get("title")
-    description = snippet_obj.get("description")
+    title: str | None = None
+    description: str | None = None
+    channel_id: str | None = None
+    channel_name: str | None = None
+    thumbnails: YtliveDataVideoItemSnippetThumbnails | None = None
+    if active_video_item.snippet is not None:
+        title = active_video_item.snippet.title
+        description = active_video_item.snippet.description
+        channel_id = active_video_item.snippet.channelId
+        channel_name = active_video_item.snippet.channelTitle
+        thumbnails = active_video_item.snippet.thumbnails
 
-    channel_id = snippet_obj.get("channelId")
-    channel_name = snippet_obj.get("channelTitle")
-
-    thumbnails = snippet_obj.get("thumbnails", {})
-
-    start_time_string = live_streming_details_obj.get("actualStartTime")
-    end_time_string = live_streming_details_obj.get("actualEndTime")
+    start_time_string: str | None = None
+    end_time_string: str | None = None
+    if active_video_item.liveStreamingDetails is not None:
+        start_time_string = active_video_item.liveStreamingDetails.actualStartTime
+        end_time_string = active_video_item.liveStreamingDetails.actualEndTime
 
     channel_url = (
         f"https://www.youtube.com/channel/{channel_id}"
@@ -218,10 +262,14 @@ def dump_ytlive_channel_live(
                     "id": active_video_id,
                     "title": title,
                     "description": description,
-                    "url": f"https://www.youtube.com/watch?v={active_video_id}"
-                    if active_video_id is not None
-                    else None,
-                    "thumbnails": thumbnails,
+                    "url": (
+                        f"https://www.youtube.com/watch?v={active_video_id}"
+                        if active_video_id is not None
+                        else None
+                    ),
+                    "thumbnails": (
+                        thumbnails.model_dump() if thumbnails is not None else None
+                    ),
                     "startTime": start_time_string,
                     "endTime": end_time_string,
                     "isOnair": active_search_item_live_broadcast_content == "live",
