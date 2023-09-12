@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Literal, Optional
+from typing import Literal
 from zoneinfo import ZoneInfo
 
 import requests
