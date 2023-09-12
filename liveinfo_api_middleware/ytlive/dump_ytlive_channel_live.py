@@ -35,6 +35,23 @@ class YtliveDataChannel(BaseModel):
     items: list[YtliveDataChannelItem] | None = None
 
 
+class YtliveDataSearchItemSnippet(BaseModel):
+    liveBroadcastContent: str
+
+
+class YtliveDataSearchItemId(BaseModel):
+    videoId: str
+
+
+class YtliveDataSearchItem(BaseModel):
+    id: YtliveDataSearchItemId
+    snippet: YtliveDataSearchItemSnippet | None = None
+
+
+class YtliveDataSearch(BaseModel):
+    items: list[YtliveDataSearchItem] | None = None
+
+
 def dump_ytlive_channel_live(
     ytlive_channel_id: str,
     ytlive_api_key: str,
@@ -81,8 +98,12 @@ def dump_ytlive_channel_live(
             "User-Agent": useragent,
         },
     )
-    search_data = search_response.json()
-    search_list_items = search_data["items"]
+    search_api_dict = search_response.json()
+    search_api_data = YtliveDataSearch.model_validate(search_api_dict)
+
+    search_list_items = (
+        search_api_data.items if search_api_data.items is not None else []
+    )
 
     # 各動画の詳細を取得
     videos_response = requests.get(
@@ -90,9 +111,7 @@ def dump_ytlive_channel_live(
         params={
             "key": ytlive_api_key,
             "part": "snippet,status,liveStreamingDetails",
-            "id": ",".join(
-                list(map(lambda item: item["id"]["videoId"], search_list_items))
-            ),
+            "id": ",".join(list(map(lambda item: item.id.videoId, search_list_items))),
         },
         headers={
             "User-Agent": useragent,
@@ -113,14 +132,17 @@ def dump_ytlive_channel_live(
             # 非公開・限定公開のライブ配信・動画は対象にしない
             continue
 
-        search_item = next(
+        search_item: YtliveDataSearchItem = next(
             filter(
-                lambda search_item: search_item["id"]["videoId"] == video_id,
+                lambda search_item: search_item.id.videoId == video_id,
                 search_list_items,
             )
         )
 
-        live_broadcast_content = search_item["snippet"].get("liveBroadcastContent")
+        live_broadcast_content: str | None = None
+        if search_item.snippet is not None:
+            live_broadcast_content = search_item.snippet.liveBroadcastContent
+
         live_streming_details_obj = video_item.get("liveStreamingDetails")
 
         if live_broadcast_content == "live":
@@ -151,19 +173,23 @@ def dump_ytlive_channel_live(
 
     # Extract data from active_video_item
     active_video_id = active_video_item.get("id")
-    active_search_item = next(
+    active_search_item: YtliveDataSearchItem | None = next(
         filter(
-            lambda search_item: search_item["id"]["videoId"] == active_video_id,
+            lambda search_item: search_item.id.videoId == active_video_id,
             search_list_items,
         ),
-        {},
+        None,
     )
 
     snippet_obj = active_video_item.get("snippet")
     live_streming_details_obj = active_video_item.get("liveStreamingDetails", {})
-    live_broadcast_content = active_search_item.get("snippet", {}).get(
-        "liveBroadcastContent"
-    )
+
+    active_search_item_live_broadcast_content: str | None = None
+    if active_search_item is not None:
+        if active_search_item.snippet is not None:
+            active_search_item_live_broadcast_content = (
+                active_search_item.snippet.liveBroadcastContent
+            )
 
     title = snippet_obj.get("title")
     description = snippet_obj.get("description")
@@ -198,7 +224,7 @@ def dump_ytlive_channel_live(
                     "thumbnails": thumbnails,
                     "startTime": start_time_string,
                     "endTime": end_time_string,
-                    "isOnair": live_broadcast_content == "live",
+                    "isOnair": active_search_item_live_broadcast_content == "live",
                 },
                 "channel": {
                     "id": channel_id,
