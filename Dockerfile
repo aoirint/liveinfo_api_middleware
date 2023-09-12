@@ -1,5 +1,5 @@
 # syntax=docker/dockerfile:1.4
-FROM python:3.10
+FROM python:3.11
 
 RUN <<EOF
     apt-get update
