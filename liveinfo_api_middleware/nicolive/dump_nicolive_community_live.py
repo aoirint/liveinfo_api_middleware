@@ -63,6 +63,34 @@ class NicoliveWatchEmbeddedData(BaseModel):
     socialGroup: NicoliveWatchEmbeddedDataSocialGroup | None = None
 
 
+class NicoliveCommunityLiveProgram(BaseModel):
+    title: str | None
+    description: str | None
+    url: str | None
+    thumbnails: list[str] | None
+    startTime: str | None
+    endTime: str | None
+    isOnair: bool | None
+
+
+class NicoliveCommunityLiveCommunity(BaseModel):
+    name: str | None
+    url: str | None
+    iconUrl: str | None
+
+
+class NicoliveCommunityLiveUser(BaseModel):
+    name: str | None
+    url: str | None
+    iconUrl: str | None
+
+
+class NicoliveCommunityLive(BaseModel):
+    program: NicoliveCommunityLiveProgram
+    community: NicoliveCommunityLiveCommunity
+    user: NicoliveCommunityLiveUser
+
+
 def dump_nicolive_community_live(
     nicolive_community_id: str,
     useragent: str,
@@ -149,29 +177,26 @@ def dump_nicolive_community_live(
 
     dump_path.parent.mkdir(parents=True, exist_ok=True)
     dump_path.write_text(
-        json.dumps(
-            {
-                "program": {
-                    "title": json_ld.name,
-                    "description": description,
-                    "url": program_url,
-                    "thumbnails": json_ld.thumbnailUrl,
-                    "startTime": start_time_string,
-                    "endTime": end_time_string,
-                    "isOnair": is_onair,
-                },
-                "community": {
-                    "name": community_name,
-                    "url": community_url,
-                    "iconUrl": community_icon_url,
-                },
-                "user": {
-                    "name": author_name,
-                    "url": author_url,
-                    "iconUrl": user_icon_url,
-                },
-            },
-            ensure_ascii=False,
-        ),
+        NicoliveCommunityLive(
+            program=NicoliveCommunityLiveProgram(
+                title=json_ld.name,
+                description=description,
+                url=program_url,
+                thumbnails=json_ld.thumbnailUrl,
+                startTime=start_time_string,
+                endTime=end_time_string,
+                isOnair=is_onair,
+            ),
+            community=NicoliveCommunityLiveCommunity(
+                name=community_name,
+                url=community_url,
+                iconUrl=community_icon_url,
+            ),
+            user=NicoliveCommunityLiveUser(
+                name=author_name,
+                url=author_url,
+                iconUrl=user_icon_url,
+            ),
+        ).model_dump_json(),
         encoding="utf-8",
     )
