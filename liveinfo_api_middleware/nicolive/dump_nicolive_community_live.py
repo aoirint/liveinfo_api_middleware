@@ -144,13 +144,13 @@ def dump_nicolive_community_live(
 
         description_html = embedded_data.program.description
 
-        bs = BeautifulSoup(description_html, "html5lib")
+        description_bs = BeautifulSoup(description_html, "html5lib")
 
         # keep line breaks
-        for br_tag in bs.select("br"):
+        for br_tag in description_bs.select("br"):
             br_tag.replace_with("\n")
 
-        description = bs.text
+        description = description_bs.text
 
     community_name: str | None = None
     community_url: str | None = None
