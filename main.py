@@ -50,7 +50,8 @@ def v1_nicolive() -> FileResponse:
             else "None"
         )
         print(
-            f"[{now.isoformat()}] Fetch nicolive (last_fetched_at: {nicolive_last_fetched_string})"
+            f"[{now.isoformat()}] Fetch nicolive "
+            f"(last_fetched_at: {nicolive_last_fetched_string})"
         )
 
         try:

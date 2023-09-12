@@ -48,12 +48,18 @@ def dump_nicolive_community_live(
     author = json_ld_data.get("author", {})
 
     user_icon_tag = bs.select_one(
-        "#watchPage > div.___program-information-area___2mmJb > div.___program-information-header-area___3F--P > div > div.___user-summary___1PSFe.___user-summary___1gieM.user-summary > div.___thumbnail-area___1z7XZ.thumbnail-area > a > img"
+        "#watchPage > div.___program-information-area___2mmJb > "
+        "div.___program-information-header-area___3F--P > div > "
+        "div.___user-summary___1PSFe.___user-summary___1gieM.user-summary > "
+        "div.___thumbnail-area___1z7XZ.thumbnail-area > a > img"
     )
     user_icon_url = user_icon_tag.get("src") if user_icon_tag is not None else None
 
     community_name_tag = bs.select_one(
-        "#watchPage > div.___program-information-area___2mmJb > div.___program-information-body-area___1D8P9 > div.___program-information-side-area___1XQ24 > div > div > div > div > a"
+        "#watchPage > div.___program-information-area___2mmJb > "
+        "div.___program-information-body-area___1D8P9 > "
+        "div.___program-information-side-area___1XQ24 > "
+        "div > div > div > div > a"
     )
     community_name = community_name_tag.text if community_name_tag is not None else None
     community_url = (
@@ -61,7 +67,10 @@ def dump_nicolive_community_live(
     )
 
     community_icon_tag = bs.select_one(
-        "#watchPage > div.___program-information-area___2mmJb > div.___program-information-body-area___1D8P9 > div.___program-information-side-area___1XQ24 > div > div > div > a > img"
+        "#watchPage > div.___program-information-area___2mmJb > "
+        "div.___program-information-body-area___1D8P9 > "
+        "div.___program-information-side-area___1XQ24 > "
+        "div > div > div > a > img"
     )
     community_icon_url = (
         community_icon_tag.get("src") if community_icon_tag is not None else None
