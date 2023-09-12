@@ -81,6 +81,9 @@ def dump_nicolive_community_live(
         if onair_live.data is not None:
             if onair_live.data.live is not None:
                 is_onair = onair_live.data.live.status == "ON_AIR"
+    else:
+        # {'meta': {'status': 403, 'error-code': 'PERMISSION_DENIED', 'error-message': '非公開コミュニティの生放送情報はフォロワー以外取得できません。'}}  # noqa: B950
+        print(f"ERRORED: {onair_response.text}")
 
     ogp_useragent = f"facebookexternalhit/1.1;Googlebot/2.1;{useragent}"
 
