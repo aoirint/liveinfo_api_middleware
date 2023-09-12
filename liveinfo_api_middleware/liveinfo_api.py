@@ -98,8 +98,8 @@ def dump_nicolive_community_live(
     json_ld_tag = bs.find("script", attrs={"type": "application/ld+json"})
     json_ld_string = json_ld_tag.string
 
-    json_ld_data = json.loads(json_ld_string)
-    json_ld = NicoliveWatchJsonLd.model_validate(json_ld_data)
+    json_ld_dict = json.loads(json_ld_string)
+    json_ld = NicoliveWatchJsonLd.model_validate(json_ld_dict)
 
     embedded_data_tag = bs.find(id="embedded-data")
     embedded_data_string = embedded_data_tag.attrs.get("data-props")
