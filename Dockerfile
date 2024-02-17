@@ -46,18 +46,18 @@ RUN <<EOF
 EOF
 
 WORKDIR /opt/liveinfo_api_middleware
-ADD --chown=${CONTAINER_UID}:${CONTAINER_GID} ./pyproject.toml ./poetry.lock /opt/liveinfo_api_middleware/
-RUN --mount=type=cache,uid=${CONTAINER_UID},gid=${CONTAINER_GID},target=/home/user/.cache/pypoetry/cache \
-    --mount=type=cache,uid=${CONTAINER_UID},gid=${CONTAINER_GID},target=/home/user/.cache/pypoetry/artifacts <<EOF
+ADD --chown="${CONTAINER_UID}:${CONTAINER_GID}" ./pyproject.toml ./poetry.lock /opt/liveinfo_api_middleware/
+RUN --mount=type=cache,uid="${CONTAINER_UID}",gid="${CONTAINER_GID}",target=/home/user/.cache/pypoetry/cache \
+    --mount=type=cache,uid="${CONTAINER_UID}",gid="${CONTAINER_GID}",target=/home/user/.cache/pypoetry/artifacts <<EOF
     set -eu
 
     gosu user poetry install --no-root --only main
 EOF
 
-ADD --chown=${CONTAINER_UID}:${CONTAINER_GID} ./liveinfo_api_middleware /opt/liveinfo_api_middleware/liveinfo_api_middleware
-ADD --chown=${CONTAINER_UID}:${CONTAINER_GID} ./README.md ./main.py /opt/liveinfo_api_middleware/
-RUN --mount=type=cache,uid=${CONTAINER_UID},gid=${CONTAINER_GID},target=/home/user/.cache/pypoetry/cache \
-    --mount=type=cache,uid=${CONTAINER_UID},gid=${CONTAINER_GID},target=/home/user/.cache/pypoetry/artifacts <<EOF
+ADD --chown="${CONTAINER_UID}:${CONTAINER_GID}" ./liveinfo_api_middleware /opt/liveinfo_api_middleware/liveinfo_api_middleware
+ADD --chown="${CONTAINER_UID}:${CONTAINER_GID}" ./README.md ./main.py /opt/liveinfo_api_middleware/
+RUN --mount=type=cache,uid="${CONTAINER_UID}",gid="${CONTAINER_GID}",target=/home/user/.cache/pypoetry/cache \
+    --mount=type=cache,uid="${CONTAINER_UID}",gid="${CONTAINER_GID}",target=/home/user/.cache/pypoetry/artifacts <<EOF
     set -eu
 
     gosu user poetry install --only main
