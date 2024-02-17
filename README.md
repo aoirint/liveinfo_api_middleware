@@ -99,10 +99,3 @@ sudo docker run --rm --init --env-file "$PWD/.env" -v "$PWD/data:/data" -p "127.
 ## （開発者向け） ライブラリ管理
 
 ライブラリ管理にはPoetryを使っています。
-
-ライブラリに変更があった場合、以下のコマンドで`requirements.txt`を更新します（DockerイメージやCIで使われます）。
-
-```shell
-poetry export --without-hashes -o requirements.txt
-poetry export --without-hashes --with dev -o requirements-dev.txt
-```
