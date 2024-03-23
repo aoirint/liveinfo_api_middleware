@@ -289,9 +289,11 @@ def fetch_ytlive_channel_live(
             id=active_video_id,
             title=title,
             description=description,
-            url=f"https://www.youtube.com/watch?v={active_video_id}"
-            if active_video_id is not None
-            else None,
+            url=(
+                f"https://www.youtube.com/watch?v={active_video_id}"
+                if active_video_id is not None
+                else None
+            ),
             thumbnails=thumbnails,
             startTime=active_video_item_start_time_string,
             endTime=active_video_item_end_time_string,
