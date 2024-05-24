@@ -1028,13 +1028,13 @@ windows-terminal = ["colorama (>=0.4.6)"]
 
 [[package]]
 name = "pysen"
-version = "0.10.6"
+version = "0.11.0"
 description = "Python linting made easy. Also a casual yet honorific way to address individuals who have entered an organization prior to you."
 optional = false
 python-versions = "*"
 files = [
-    {file = "pysen-0.10.6-py3-none-any.whl", hash = "sha256:65c55e90e5200ecf90ad8d5252e00626909f32dc1f8405c2f74ff117552452cf"},
-    {file = "pysen-0.10.6.tar.gz", hash = "sha256:b9659c94dd353f334b7483b1068400348ed4be9973824a1f9ecdf62a39acfaf0"},
+    {file = "pysen-0.11.0-py3-none-any.whl", hash = "sha256:d4e81e12f9f1b4cf25df0399d10b0201a9a4bae18846fe0e279179b657daf015"},
+    {file = "pysen-0.11.0.tar.gz", hash = "sha256:b9ea6c67289360f7bd9c95f8c79f603a775decb9342d2635dc40fcda92dfa53a"},
 ]
 
 [package.dependencies]
@@ -1684,4 +1684,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "b45d7fecb16a9cb729540f12ff1854d7c430802cf25f2b8a72940d2af7076064"
+content-hash = "7585f840031174c2467cec5eeeed817f9f04e9e05b5933ef5e0e9b9a2f5e105d"
