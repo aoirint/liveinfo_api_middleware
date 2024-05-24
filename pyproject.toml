@@ -1,5 +1,5 @@
 [tool.pysen]
-version = "0.10"
+version = "0.11"
 
 [tool.pysen.lint]
 enable_black = true
@@ -23,23 +23,23 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-fastapi = "^0.109.1"
-uvicorn = "^0.23.2"
-requests = "^2.32.0"
-beautifulsoup4 = "^4.12.2"
+fastapi = "^0.111.0"
+uvicorn = "^0.29.0"
+requests = "^2.32.2"
+beautifulsoup4 = "^4.12.3"
 html5lib = "^1.1"
-pydantic = "^2.3.0"
+pydantic = "^2.7.1"
 
 
 [tool.poetry.group.dev.dependencies]
-pysen = "^0.10.5"
-black = "^24.3.0"
-isort = "^5.12.0"
-flake8 = "^6.1.0"
-flake8-bugbear = "^23.7.10"
-mypy = "^1.5.1"
-pytest = "^7.4.2"
-types-requests = "^2.31.0.2"
+pysen = "^0.11.0"
+black = "^24.4.2"
+isort = "^5.13.2"
+flake8 = "^7.0.0"
+flake8-bugbear = "^24.4.26"
+mypy = "^1.10.0"
+pytest = "^8.2.1"
+types-requests = "^2.32.0.20240523"
 
 [build-system]
 requires = ["poetry-core"]
