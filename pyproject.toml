@@ -38,7 +38,7 @@ isort = "^5.13.2"
 flake8 = "^7.0.0"
 flake8-bugbear = "^24.4.26"
 mypy = "^1.10.0"
-pytest = "^7.4.2"
+pytest = "^8.2.1"
 types-requests = "^2.31.0.2"
 
 [build-system]
