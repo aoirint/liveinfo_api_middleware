@@ -8,12 +8,10 @@
 ### 対応サービス
 
 - YouTube Live（YouTube Data API）
-- ~~ニコニコ生放送（非公式API）~~
-  - ~~非公開コミュニティには対応していません~~
-  - 2024-08のサービス再開以降は対応していません
+- ニコニコ生放送（非公式API）
 
-各サービスごとに1つのチャンネル（コミュニティ）のみ、データ取得できます。
-同一のサービスで複数のチャンネル（コミュニティ）からデータを取得したい場合、必要な数のAPIサーバを起動してください（各サービスに過剰なアクセスが発生しないように注意してください）。
+各サービスごとに1つのチャンネル（ユーザー）のみ、データ取得できます。
+同一のサービスで複数のチャンネル（ユーザー）からデータを取得したい場合、必要な数のAPIサーバを起動してください（各サービスに過剰なアクセスが発生しないように注意してください）。
 
 ### キャッシュ
 
@@ -91,12 +89,14 @@ sudo docker run --rm --init --env-file "$PWD/.env" -v "$PWD/data:/data" -p "127.
 |YTLIVE_CHANNEL_ID|取得するYouTubeチャンネルID（ハンドル名とは異なります）|
 |YTLIVE_API_KEY|YouTube Data APIのAPIキー|
 |YTLIVE_DUMP_PATH|YouTube配信のキャッシュの保存先（JSONファイルのパス）|
-|NICOLIVE_COMMUNITY_ID|取得するニコニコ生放送のコミュニティID（`co`から始まるコミュニティIDのうち、数値の部分のみ）|
+|NICOLIVE_USER_ID|取得するニコニコ生放送の放送者ユーザーID|
 |NICOLIVE_DUMP_PATH|ニコニコ生放送のキャッシュの保存先（JSONファイルのパス）|
 |CORS_ALLOW_ORIGINS|CORS設定（カンマ区切り）|
 |HOST_DATA_DIR|（Docker Composeの場合のみ）ホスト側からコンテナにマウントするデータディレクトリのパス|
 |HOST_PORT|（Docker Composeの場合のみ）ホスト側にバインドするAPIサーバのTCPポート番号|
 
 ## （開発者向け） ライブラリ管理
+
+- Python 3.11
 
 ライブラリ管理にはPoetryを使っています。
