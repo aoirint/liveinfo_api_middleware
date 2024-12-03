@@ -1,5 +1,5 @@
-# syntax=docker/dockerfile:1.6
-FROM python:3.11
+# syntax=docker/dockerfile:1.11
+FROM python:3.12
 
 ARG DEBIAN_FRONTEND=noninteractive
 ARG PIP_NO_CACHE_DIR=1
