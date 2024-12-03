@@ -173,7 +173,7 @@ def fetch_ytlive_channel_live(
         params={
             "key": ytlive_api_key,
             "part": "snippet,status,liveStreamingDetails",
-            "id": ",".join(list(map(lambda item: item.id.videoId, search_list_items))),
+            "id": ",".join([item.id.videoId for item in search_list_items]),
         },
         headers={
             "User-Agent": useragent,
@@ -213,7 +213,8 @@ def fetch_ytlive_channel_live(
             # 終了済みのライブ番組またはプレミア公開番組がある場合、選択する
             live_items.append(video_item)
 
-    # 最新とその1つ前のライブ番組の順番が交換されるYouTubeの謎仕様の対策（再エンコード処理のせい？）
+    # 最新とその1つ前のライブ番組の順番が交換されることがある、
+    # YouTubeの謎仕様の対策（再エンコード処理のせい？）
     # 実際の放送時間に基づいてソートし直す
     active_video_item: YtliveApiVideoItem | None = None
     max_start_time: datetime | None = None

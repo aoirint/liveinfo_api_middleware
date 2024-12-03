@@ -1,10 +1,10 @@
 import os
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from typing import Optional
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+
 from liveinfo_api_middleware import __VERSION__ as LIVEINFO_VERSION
 from liveinfo_api_middleware.nicolive import NicoliveUserLive, fetch_nicolive_user_live
 from liveinfo_api_middleware.ytlive import YtliveChannelLive, fetch_ytlive_channel_live
@@ -32,10 +32,10 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-nicolive_last_fetched: Optional[datetime] = None
+nicolive_last_fetched: datetime | None = None
 nicolive_interval = timedelta(seconds=60)
 
-ytlive_last_fetched: Optional[datetime] = None
+ytlive_last_fetched: datetime | None = None
 ytlive_interval = timedelta(seconds=60)
 
 
@@ -48,7 +48,7 @@ def v1_nicolive() -> NicoliveUserLive:
 
     nicolive_user_live: NicoliveUserLive | None = None
 
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     if (
         nicolive_last_fetched is None
         or nicolive_interval <= now - nicolive_last_fetched
@@ -104,7 +104,7 @@ def v1_ytlive() -> YtliveChannelLive:
 
     ytlive_channel_live: YtliveChannelLive | None = None
 
-    now = datetime.now(tz=timezone.utc)
+    now = datetime.now(tz=UTC)
     if ytlive_last_fetched is None or ytlive_interval <= now - ytlive_last_fetched:
         ytlive_last_fetched_string = (
             ytlive_last_fetched.isoformat()
@@ -112,7 +112,8 @@ def v1_ytlive() -> YtliveChannelLive:
             else "None"
         )
         print(
-            f"[{now.isoformat()}] Fetch ytlive (last_fetched_at: {ytlive_last_fetched_string})"
+            f"[{now.isoformat()}] Fetch ytlive "
+            f"(last_fetched_at: {ytlive_last_fetched_string})"
         )
 
         try:
