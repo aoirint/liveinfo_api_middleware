@@ -6,17 +6,14 @@ from typing import Optional
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from liveinfo_api_middleware import __VERSION__ as LIVEINFO_VERSION
-from liveinfo_api_middleware.nicolive import (
-    NicoliveCommunityLive,
-    fetch_nicolive_community_live,
-)
+from liveinfo_api_middleware.nicolive import NicoliveUserLive, fetch_nicolive_user_live
 from liveinfo_api_middleware.ytlive import YtliveChannelLive, fetch_ytlive_channel_live
 
 YTLIVE_CHANNEL_ID = os.environ["YTLIVE_CHANNEL_ID"]
 YTLIVE_API_KEY = os.environ["YTLIVE_API_KEY"]
 YTLIVE_DUMP_PATH = Path(os.environ["YTLIVE_DUMP_PATH"])
 
-NICOLIVE_COMMUNITY_ID = os.environ["NICOLIVE_COMMUNITY_ID"]
+NICOLIVE_USER_ID = os.environ["NICOLIVE_USER_ID"]
 NICOLIVE_DUMP_PATH = Path(os.environ["NICOLIVE_DUMP_PATH"])
 
 CORS_ALLOW_ORIGINS = os.environ["CORS_ALLOW_ORIGINS"].split(",")
@@ -44,12 +41,12 @@ ytlive_interval = timedelta(seconds=60)
 
 @app.get(
     "/v1/nicolive",
-    response_model=NicoliveCommunityLive,
+    response_model=NicoliveUserLive,
 )
-def v1_nicolive() -> NicoliveCommunityLive:
+def v1_nicolive() -> NicoliveUserLive:
     global nicolive_last_fetched
 
-    nicolive_community_live: NicoliveCommunityLive | None = None
+    nicolive_user_live: NicoliveUserLive | None = None
 
     now = datetime.now(tz=timezone.utc)
     if (
@@ -68,34 +65,34 @@ def v1_nicolive() -> NicoliveCommunityLive:
         )
 
         try:
-            nicolive_community_live = fetch_nicolive_community_live(
-                nicolive_community_id=NICOLIVE_COMMUNITY_ID,
+            nicolive_user_live = fetch_nicolive_user_live(
+                nicolive_user_id=NICOLIVE_USER_ID,
                 useragent=USERAGENT,
             )
 
             NICOLIVE_DUMP_PATH.parent.mkdir(parents=True, exist_ok=True)
             NICOLIVE_DUMP_PATH.write_text(
-                nicolive_community_live.model_dump_json(),
+                nicolive_user_live.model_dump_json(),
                 encoding="utf-8",
             )
         finally:
             nicolive_last_fetched = now
 
-    if nicolive_community_live is None:
+    if nicolive_user_live is None:
         # cache not expired or error fallback
         if NICOLIVE_DUMP_PATH.exists():
-            nicolive_community_live = NicoliveCommunityLive.model_validate_json(
+            nicolive_user_live = NicoliveUserLive.model_validate_json(
                 NICOLIVE_DUMP_PATH.read_text(encoding="utf-8")
             )
 
-    if nicolive_community_live is None:
+    if nicolive_user_live is None:
         # return 404 if not found
         raise HTTPException(
             status_code=404,
-            detail="Nicolive Community Live not found",
+            detail="Nicolive User Live not found",
         )
 
-    return nicolive_community_live
+    return nicolive_user_live
 
 
 @app.get(

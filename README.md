@@ -91,7 +91,7 @@ sudo docker run --rm --init --env-file "$PWD/.env" -v "$PWD/data:/data" -p "127.
 |YTLIVE_CHANNEL_ID|取得するYouTubeチャンネルID（ハンドル名とは異なります）|
 |YTLIVE_API_KEY|YouTube Data APIのAPIキー|
 |YTLIVE_DUMP_PATH|YouTube配信のキャッシュの保存先（JSONファイルのパス）|
-|NICOLIVE_COMMUNITY_ID|取得するニコニコ生放送のコミュニティID（`co`から始まるコミュニティIDのうち、数値の部分のみ）|
+|NICOLIVE_USER_ID|取得するニコニコ生放送の放送者ユーザーID|
 |NICOLIVE_DUMP_PATH|ニコニコ生放送のキャッシュの保存先（JSONファイルのパス）|
 |CORS_ALLOW_ORIGINS|CORS設定（カンマ区切り）|
 |HOST_DATA_DIR|（Docker Composeの場合のみ）ホスト側からコンテナにマウントするデータディレクトリのパス|
