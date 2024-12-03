@@ -97,6 +97,6 @@ sudo docker run --rm --init --env-file "$PWD/.env" -v "$PWD/data:/data" -p "127.
 
 ## （開発者向け） ライブラリ管理
 
-- Python 3.11
+- Python 3.12
 
 ライブラリ管理にはPoetryを使っています。
