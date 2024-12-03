@@ -1,7 +1,6 @@
-version: '3.8'
 services:
   app:
-    image: aoirint/liveinfo_api_middleware
+    build: .
     restart: always
     environment:
       YTLIVE_CHANNEL_ID: ${YTLIVE_CHANNEL_ID:?}
