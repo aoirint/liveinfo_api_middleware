@@ -148,7 +148,7 @@ def fetch_nicolive_user_live(
             "providerType": "user",
             "isIncludeNonPublic": "false",
             "offset": "0",
-            "limit": "10",
+            "limit": "1",
             "withTotalCount": "true",
         },
     )
