@@ -32,11 +32,6 @@ pydantic = "^2.7.1"
 
 
 [tool.poetry.group.dev.dependencies]
-pysen = "^0.11.0"
-black = "^24.4.2"
-isort = "^5.13.2"
-flake8 = "^7.0.0"
-flake8-bugbear = "^24.4.26"
 mypy = "^1.10.0"
 pytest = "^8.2.1"
 types-requests = "^2.32.0.20240523"
