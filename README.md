@@ -95,8 +95,46 @@ sudo docker run --rm --init --env-file "$PWD/.env" -v "$PWD/data:/data" -p "127.
 |HOST_DATA_DIR|（Docker Composeの場合のみ）ホスト側からコンテナにマウントするデータディレクトリのパス|
 |HOST_PORT|（Docker Composeの場合のみ）ホスト側にバインドするAPIサーバのTCPポート番号|
 
-## （開発者向け） ライブラリ管理
+## （開発者向け）環境構築
 
 - Python 3.12
+- uv 0.9
 
-ライブラリ管理にはPoetryを使っています。
+```shell
+uv sync --all-groups
+```
+
+## （開発者向け）ローカル実行手順
+
+```shell
+uv run fastapi dev liveinfo_api_middleware --reload
+```
+
+## （開発者向け）コードフォーマット
+
+```shell
+uv run ruff check --fix
+uv run ruff format
+
+uv run mypy .
+```
+
+## リリース手順
+
+1. `pyproject.toml`の`version`フィールドを更新します。
+2. 変更をコミットし、プルリクエストを作成して、`main`ブランチにマージします。
+3. 自動的にDockerイメージのビルドとGitHub Releaseの作成が行われます。
+
+## GitHub Actionsの管理
+
+pinactを使用して、GitHub Actionsのアクションのバージョンを管理しています。
+
+- [pinact](https://github.com/suzuki-shunsuke/pinact)
+
+```shell
+# 固定
+pinact run
+
+# 更新
+pinact run --update
+```
