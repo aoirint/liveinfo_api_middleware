@@ -1,66 +1,67 @@
 # syntax=docker/dockerfile:1
-FROM python:3.12
+ARG BASE_IMAGE=ubuntu:24.04
+ARG PYTHON_VERSION=3.12
+ARG UV_VERSION=0.9
+
+# Download uv binary stage
+FROM "ghcr.io/astral-sh/uv:${UV_VERSION}" AS uv-reference
+
+# Build uv and Python base stage
+FROM "${BASE_IMAGE}" AS uv-python-base
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG PIP_NO_CACHE_DIR=1
+SHELL ["/bin/bash", "-euo", "pipefail", "-c"]
+
 ENV PYTHONUNBUFFERED=1
-ENV PATH=/opt/liveinfo_api_middleware/.venv/bin:/home/user/.local/bin:${PATH}
 
+ARG UV_VERSION
+COPY --from=uv-reference /uv /uvx /bin/
+
+ENV UV_PYTHON_CACHE_DIR="/uv_python_cache"
+ENV UV_PYTHON_INSTALL_DIR="/opt/python"
+ENV PATH="${UV_PYTHON_INSTALL_DIR}/bin:${PATH}"
+
+ARG PYTHON_VERSION
+RUN --mount=type=cache,target=/uv_python_cache <<EOF
+    uv python install "${PYTHON_VERSION}"
+EOF
+
+
+# Build Python virtual environment stage
+FROM uv-python-base AS build-venv
+
+#  uv configuration:
+# - Generate bytecodes
+# - Copy packages into virtual environment
+ENV UV_COMPILE_BYTECODE=1
+ENV UV_LINK_MODE=copy
+
+# Install Python dependencies
+COPY ./pyproject.toml uv.lock /opt/liveinfo_api_middleware/
+RUN --mount=type=cache,target=/root/.cache/uv <<EOF
+    cd /opt/liveinfo_api_middleware
+
+    UV_PROJECT_ENVIRONMENT="/opt/python_venv" uv sync --locked --no-dev --no-editable --no-install-project
+EOF
+
+
+# Runtime stage
+FROM uv-python-base AS runtime
+
+# Copy Python virtual environment from build stage
+COPY --from=build-venv /opt/python_venv /opt/python_venv
+ENV PATH="/opt/python_venv/bin:${PATH}"
+
+# Copy application files
+COPY ./liveinfo_api_middleware /opt/liveinfo_api_middleware/liveinfo_api_middleware
+
+# Pre-compile Python bytecode
 RUN <<EOF
-    set -eu
+    cd /opt/liveinfo_api_middleware
 
-    apt-get update
-    apt-get install -y \
-        gosu
-
-    apt-get clean
-    rm -rf /var/lib/apt/lists/*
+    python -m compileall ./liveinfo_api_middleware
 EOF
 
-ARG CONTAINER_UID=2000
-ARG CONTAINER_GID=2000
-RUN <<EOF
-    set -eu
+USER "2000:2000"
 
-    groupadd --non-unique --gid "${CONTAINER_GID}" user
-    useradd --non-unique --uid "${CONTAINER_UID}" --gid "${CONTAINER_GID}" --create-home user
-EOF
-
-ARG POETRY_VERSION=1.7.1
-RUN <<EOF
-    set -eu
-
-    gosu user pip install "poetry==${POETRY_VERSION}"
-
-    gosu user poetry config virtualenvs.in-project true
-
-    mkdir -p /home/user/.cache/pypoetry/{cache,artifacts}
-    chown -R "user:user" /home/user/.cache
-EOF
-
-RUN <<EOF
-    set -eu
-
-    mkdir -p /opt/liveinfo_api_middleware
-    chown -R user:user /opt/liveinfo_api_middleware
-EOF
-
-WORKDIR /opt/liveinfo_api_middleware
-ADD --chown="${CONTAINER_UID}:${CONTAINER_GID}" ./pyproject.toml ./poetry.lock /opt/liveinfo_api_middleware/
-RUN --mount=type=cache,uid="${CONTAINER_UID}",gid="${CONTAINER_GID}",target=/home/user/.cache/pypoetry/cache \
-    --mount=type=cache,uid="${CONTAINER_UID}",gid="${CONTAINER_GID}",target=/home/user/.cache/pypoetry/artifacts <<EOF
-    set -eu
-
-    gosu user poetry install --no-root --only main
-EOF
-
-ADD --chown="${CONTAINER_UID}:${CONTAINER_GID}" ./liveinfo_api_middleware /opt/liveinfo_api_middleware/liveinfo_api_middleware
-ADD --chown="${CONTAINER_UID}:${CONTAINER_GID}" ./README.md ./main.py /opt/liveinfo_api_middleware/
-RUN --mount=type=cache,uid="${CONTAINER_UID}",gid="${CONTAINER_GID}",target=/home/user/.cache/pypoetry/cache \
-    --mount=type=cache,uid="${CONTAINER_UID}",gid="${CONTAINER_GID}",target=/home/user/.cache/pypoetry/artifacts <<EOF
-    set -eu
-
-    gosu user poetry install --only main
-EOF
-
-CMD [ "gosu", "user", "poetry", "run", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000" ]
+CMD [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000" ]

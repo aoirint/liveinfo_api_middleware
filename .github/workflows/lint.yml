@@ -2,36 +2,79 @@ name: Lint
 
 on:
   push:
+    branches:
+      - main
   pull_request:
     branches:
-      - "**"
-  workflow_dispatch:
+      - main
 
 defaults:
   run:
     shell: bash
-    
+
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
 
     steps:
-      - uses: actions/checkout@v4
+    - uses: actions/checkout@93cb6efe18208431cddfb8368fd83d5badbf9bfd # v5.0.1
 
-      - name: Install Poetry
-        run: pipx install poetry
+    - name: Setup Python and uv
+      uses: astral-sh/setup-uv@1e862dfacbd1d6d858c55d9b792c756523627244 # v7.1.4
+      with:
+        python-version: '3.12'
+        enable-cache: true
+        cache-suffix: ${{ runner.os }}
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-          cache: 'poetry'
+    - name: Install Python dependencies
+      run: uv sync --all-groups
 
-      - name: Install Dependencies
-        run: poetry install
+    # 以降のステップが失敗してもキャッシュを保持するため、明示的にキャッシュを復元する
+    - name: Restore Lint cache
+      id: cache-lint-restore
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: |
+          ./.ruff_cache
+          ./.mypy_cache
+        key: ${{ runner.os }}-lint-${{ github.sha }}
+        restore-keys: |
+          ${{ runner.os }}-lint-
 
-      - name: Run lint
-        run: poetry run ruff check
+    # pyproject.toml のバージョンがPEP 440に準拠していることを確認
+    - name: Check pyproject.toml version PEP 440 compliance
+      run: |
+        PYPROJECT_VERSION=$(uv version --short)
 
-      - name: Run type check
-        run: poetry run mypy .
+        NORMALIZED_PYPROJECT_VERSION=$(
+          echo "${PYPROJECT_VERSION}" | \
+          uv run python -c "import sys; from packaging.version import Version; print(Version(sys.stdin.read().strip()))"
+        )
+
+        if [ "${PYPROJECT_VERSION}" != "${NORMALIZED_PYPROJECT_VERSION}" ]; then
+          echo "Version in pyproject.toml is not PEP 440 compliant: '${PYPROJECT_VERSION}'. Expected: '${NORMALIZED_PYPROJECT_VERSION}'."
+          exit 1
+        fi
+
+    # リンターチェック
+    - name: Run Ruff lint check
+      run: uv run ruff check
+
+    # フォーマットチェック
+    - name: Run Ruff format check
+      run: uv run ruff format --check
+
+    # 型チェック
+    - name: Run mypy
+      run: uv run mypy .
+
+    # Lintが失敗してもキャッシュを保存する
+    - name: Save Lint cache
+      id: cache-lint-save
+      uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      if: always()
+      with:
+        path: |
+          ./.ruff_cache
+          ./.mypy_cache
+        key: ${{ runner.os }}-lint-${{ github.sha }}
