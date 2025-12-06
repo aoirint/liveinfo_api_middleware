@@ -24,7 +24,7 @@ packages = ["liveinfo_api_middleware"]
 
 [project]
 name = "liveinfo-api-middleware"
-version = "0.0.0"
+version = "0.6.0"
 description = "Middleware API server to proxy and cache Niconico Live API (unofficial) and YouTube Live API"
 readme = "README.md"
 authors = [
