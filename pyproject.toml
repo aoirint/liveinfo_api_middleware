@@ -1,5 +1,4 @@
 [tool.ruff]
-target-version = "py311"
 line-length = 88
 
 [tool.ruff.lint]
@@ -16,31 +15,44 @@ select = [
 [tool.mypy]
 strict = true
 
+[tool.uv]
+package = true
+add-bounds = "exact"
 
-[tool.poetry]
+[tool.setuptools]
+packages = ["liveinfo_api_middleware"]
+
+[project]
 name = "liveinfo-api-middleware"
 version = "0.0.0"
-description = ""
-authors = ["aoirint <aoirint@gmail.com>"]
+description = "Middleware API server to proxy and cache Niconico Live API (unofficial) and YouTube Live API"
 readme = "README.md"
+authors = [
+    {name = "aoirint", email = "aoirint@gmail.com"}
+]
+license = "MIT"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]==0.115.5",
+    "uvicorn[standard]==0.32.1",
+    "requests==2.32.4",
+    "beautifulsoup4==4.12.3",
+    "html5lib==1.1",
+    "pydantic==2.10.2",
+]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-fastapi = {extras = ["standard"], version = "^0.115.5"}
-uvicorn = {extras = ["standard"], version = "^0.32.1"}
-requests = "^2.32.4"
-beautifulsoup4 = "^4.12.3"
-html5lib = "^1.1"
-pydantic = "^2.10.2"
+[project.urls]
+Repository = "https://github.com/aoirint/liveinfo_api_middleware"
 
-
-[tool.poetry.group.dev.dependencies]
-mypy = "^1.13.0"
-pytest = "^8.3.4"
-types-requests = "^2.32.0.20241016"
-ruff = "^0.8.1"
-types-beautifulsoup4 = "^4.12.0.20241020"
+[dependency-groups]
+dev = [
+    "mypy==1.13.0",
+    "pytest==8.3.4",
+    "types-requests==2.32.0.20241016",
+    "ruff==0.8.1",
+    "types-beautifulsoup4==4.12.0.20241020",
+]
 
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
