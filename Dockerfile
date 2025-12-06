@@ -30,7 +30,7 @@ EOF
 # Build Python virtual environment stage
 FROM uv-python-base AS build-venv
 
-#  uv configuration:
+#  uv configuration
 # - Generate bytecodes
 # - Copy packages into virtual environment
 ENV UV_COMPILE_BYTECODE=1
@@ -48,6 +48,16 @@ EOF
 # Runtime stage
 FROM uv-python-base AS runtime
 
+# Install OS dependencies
+# - tzdata: time zone data
+RUN --mount=type=cache,target=/var/cache/apt \
+    --mount=type=cache,target=/var/lib/apt/lists <<EOF
+    apt-get update
+
+    apt-get install -y --no-install-recommends \
+        tzdata
+EOF
+
 # Copy Python virtual environment from build stage
 COPY --from=build-venv /opt/python_venv /opt/python_venv
 ENV PATH="/opt/python_venv/bin:${PATH}"
@@ -64,4 +74,4 @@ EOF
 
 USER "2000:2000"
 
-CMD [ "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000" ]
+CMD [ "fastapi", "run", "/opt/liveinfo_api_middleware/liveinfo_api_middleware" ]
