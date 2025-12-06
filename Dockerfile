@@ -63,6 +63,7 @@ COPY --from=build-venv /opt/python_venv /opt/python_venv
 ENV PATH="/opt/python_venv/bin:${PATH}"
 
 # Copy application files
+COPY ./pyproject.toml /opt/liveinfo_api_middleware/pyproject.toml
 COPY ./liveinfo_api_middleware /opt/liveinfo_api_middleware/liveinfo_api_middleware
 
 # Pre-compile Python bytecode
