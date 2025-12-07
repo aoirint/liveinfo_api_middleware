@@ -27,7 +27,7 @@ jobs:
         cache-suffix: ${{ runner.os }}
 
     - name: Install Python dependencies
-      run: uv sync --all-groups
+      run: uv sync --frozen --all-groups
 
     # 以降のステップが失敗してもキャッシュを保持するため、明示的にキャッシュを復元する
     - name: Restore Lint cache
