@@ -40,7 +40,7 @@ jobs:
           cache-suffix: -${{ runner.os }}
 
       - name: Install Python dependencies
-        run: uv sync --all-groups
+        run: uv sync --frozen --all-groups
 
       # NOTE: Replace version in pyproject.toml
       - name: Generate version
