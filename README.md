@@ -53,33 +53,6 @@ sudo docker compose up -d
 
 必要に応じて、nginxやcloudflaredを設定してください。
 
-## （開発者向け）実行手順
-
-### 1. 永続化ディレクトリを作成
-
-永続化のため、`UID=2000`、`GID=2000`のデータディレクトリを作成します（Docker Volumeで代用可）。
-
-```shell
-mkdir -p data
-sudo chown -R 2000:2000 data
-```
-
-### 2. .envファイルを作成
-
-`template.env`を`.env`としてコピーして、設定します。設定項目については、[設定](#設定)の項目を参照してください。
-
-### 3. Dockerイメージをビルド
-
-```shell
-sudo docker build -t aoirint/liveinfo_api_middleware .
-```
-
-### 4. Dockerイメージを実行
-
-```shell
-sudo docker run --rm --init --env-file "$PWD/.env" -v "$PWD/data:/data" -p "127.0.0.1:8000:8000" aoirint/liveinfo_api_middleware
-```
-
 ## 設定
 
 環境変数または`.env`ファイルで設定します。
@@ -95,7 +68,9 @@ sudo docker run --rm --init --env-file "$PWD/.env" -v "$PWD/data:/data" -p "127.
 |HOST_DATA_DIR|（Docker Composeの場合のみ）ホスト側からコンテナにマウントするデータディレクトリのパス|
 |HOST_PORT|（Docker Composeの場合のみ）ホスト側にバインドするAPIサーバのTCPポート番号|
 
-## （開発者向け）環境構築
+## 開発
+
+### 環境構築
 
 - Python 3.12
 - uv 0.9
@@ -104,13 +79,13 @@ sudo docker run --rm --init --env-file "$PWD/.env" -v "$PWD/data:/data" -p "127.
 uv sync --all-groups
 ```
 
-## （開発者向け）ローカル実行手順
+### 実行
 
 ```shell
 uv run fastapi dev liveinfo_api_middleware --reload
 ```
 
-## （開発者向け）コードフォーマット
+### コードフォーマット
 
 ```shell
 uv run ruff check --fix
@@ -119,13 +94,13 @@ uv run ruff format
 uv run mypy .
 ```
 
-## リリース手順
+### リリース
 
 1. `pyproject.toml`の`version`フィールドを更新します。
 2. 変更をコミットし、プルリクエストを作成して、`main`ブランチにマージします。
 3. 自動的にDockerイメージのビルドとGitHub Releaseの作成が行われます。
 
-## GitHub Actionsの管理
+### GitHub Actionsの管理
 
 pinactを使用して、GitHub Actionsのアクションのバージョンを管理しています。
 
