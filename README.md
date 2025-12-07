@@ -96,7 +96,7 @@ uv run mypy .
 
 ### リリース
 
-1. `pyproject.toml`の`version`フィールドを更新します。
+1. `uv version {new_version}`を実行して、プロジェクトのバージョンを更新します。
 2. 変更をコミットし、プルリクエストを作成して、`main`ブランチにマージします。
 3. 自動的にDockerイメージのビルドとGitHub Releaseの作成が行われます。
 
