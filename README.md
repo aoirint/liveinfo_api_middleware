@@ -76,7 +76,7 @@ sudo docker compose up -d
 - uv 0.9
 
 ```shell
-uv sync --all-groups
+uv sync --frozen --all-groups
 ```
 
 ### 実行
